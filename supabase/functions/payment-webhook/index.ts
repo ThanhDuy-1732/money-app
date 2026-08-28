@@ -37,7 +37,7 @@ async function verifyPayOS(body: Record<string, unknown>, checksumKey: string): 
 
 async function verifyVNPay(body: Record<string, unknown>, hashSecret: string): Promise<boolean> {
   const data = Object.keys(body)
-    .filter(k => k !== 'vnp_SecureHash')
+    .filter(k => k !== 'vnp_SecureHash' && k !== 'vnp_SecureHashType')
     .sort()
     .map(k => `${k}=${body[k]}`)
     .join('&')
@@ -127,7 +127,14 @@ Deno.serve(async (req) => {
       p_reason_code: 'adjustment',
       p_reference_id: payment.id,
     })
-    if (pointsError) console.error('add_points error:', pointsError)
+    // ponytail: non-atomic — payment marked succeeded before add_points; need combined RPC for full atomicity
+    if (pointsError) {
+      console.error('add_points error:', pointsError)
+      return new Response(JSON.stringify({ error: 'points award failed' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
   }
 
   return new Response(JSON.stringify({ ok: true }), {
