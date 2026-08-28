@@ -55,12 +55,23 @@ Deno.serve(async (req) => {
   const hasVNPayFields = Object.keys(body).some(k => k.startsWith('vnp_'))
   const gateway = hasVNPayFields ? 'vnpay' : ((body['gateway'] as string) ?? 'payos')
 
-  const PAYOS_CHECKSUM_KEY = Deno.env.get('PAYOS_CHECKSUM_KEY') ?? ''
-  const VNPAY_HASH_SECRET   = Deno.env.get('VNPAY_HASH_SECRET') ?? ''
+  const PAYOS_CHECKSUM_KEY = Deno.env.get('PAYOS_CHECKSUM_KEY')
+  const VNPAY_HASH_SECRET   = Deno.env.get('VNPAY_HASH_SECRET')
+
+  if (gateway === 'payos' && !PAYOS_CHECKSUM_KEY) {
+    return new Response(JSON.stringify({ error: 'server misconfigured' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+  if (gateway === 'vnpay' && !VNPAY_HASH_SECRET) {
+    return new Response(JSON.stringify({ error: 'server misconfigured' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
 
   let valid = false
-  if (gateway === 'payos') valid = await verifyPayOS(body, PAYOS_CHECKSUM_KEY)
-  if (gateway === 'vnpay') valid = await verifyVNPay(body, VNPAY_HASH_SECRET)
+  if (gateway === 'payos') valid = await verifyPayOS(body, PAYOS_CHECKSUM_KEY!)
+  if (gateway === 'vnpay') valid = await verifyVNPay(body, VNPAY_HASH_SECRET!)
 
   if (!valid) {
     return new Response(JSON.stringify({ error: 'Invalid checksum' }), {
