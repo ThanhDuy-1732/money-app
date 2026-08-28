@@ -5,6 +5,13 @@ import { crypto } from 'https://deno.land/std@0.177.0/crypto/mod.ts'
 // ponytail: POINTS_PER_1000_VND=1, adjust ratio when business decides
 const POINTS_PER_1000_VND = 1
 
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -25,7 +32,7 @@ async function verifyPayOS(body: Record<string, unknown>, checksumKey: string): 
   )
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data))
   const hex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
-  return hex === body['signature']
+  return timingSafeEqual(hex, String(body['signature'] ?? ''))
 }
 
 async function verifyVNPay(body: Record<string, unknown>, hashSecret: string): Promise<boolean> {
@@ -43,7 +50,7 @@ async function verifyVNPay(body: Record<string, unknown>, hashSecret: string): P
   )
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data))
   const hex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
-  return hex === body['vnp_SecureHash']
+  return timingSafeEqual(hex, String(body['vnp_SecureHash'] ?? ''))
 }
 
 Deno.serve(async (req) => {
