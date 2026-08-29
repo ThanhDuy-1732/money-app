@@ -20,3 +20,22 @@ export async function updateProfile(formData: { display_name: string; bio?: stri
   revalidatePath('/profile')
   return { error: null }
 }
+
+export async function followUser(targetUserId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Chưa đăng nhập' }
+  const { error } = await supabase.from('follows').insert({ follower_id: user.id, following_id: targetUserId })
+  if (error) return { error: error.message }
+  revalidatePath(`/u/${targetUserId}`)
+  return { error: null }
+}
+
+export async function unfollowUser(targetUserId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Chưa đăng nhập' }
+  await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', targetUserId)
+  revalidatePath(`/u/${targetUserId}`)
+  return { error: null }
+}
