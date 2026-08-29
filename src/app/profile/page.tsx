@@ -3,14 +3,11 @@ import { redirect } from 'next/navigation'
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader'
 import { EditProfileForm } from '@/features/profile/components/EditProfileForm'
 import { AvatarUpload } from '@/features/profile/components/AvatarUpload'
-import { recordLogin } from '@/features/profile/actions/streak.actions'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-
-  await recordLogin()
 
   const { data: profile } = await supabase
     .from('profiles')

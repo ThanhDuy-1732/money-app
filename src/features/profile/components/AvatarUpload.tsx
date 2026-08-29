@@ -2,6 +2,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { useState, useRef } from 'react'
 import { Avatar } from '@/components/ui'
+import { updateAvatarUrl } from '../actions/profile.actions'
 
 export function AvatarUpload({ userId, currentUrl }: { userId: string; currentUrl?: string | null }) {
   const [url, setUrl] = useState(currentUrl)
@@ -29,7 +30,7 @@ export function AvatarUpload({ userId, currentUrl }: { userId: string; currentUr
     const { data } = supabase.storage.from('avatars').getPublicUrl(path)
     setUrl(data.publicUrl)
 
-    await supabase.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', userId)
+    await updateAvatarUrl(data.publicUrl)
     setUploading(false)
   }
 

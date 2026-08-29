@@ -5,6 +5,7 @@ import { ToastProvider } from '@/components/ui'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { signOut } from '@/features/auth/actions/auth.actions'
+import { recordLogin } from '@/features/profile/actions/streak.actions'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (user) await recordLogin()
 
   return (
     <html lang="vi">

@@ -39,3 +39,15 @@ export async function unfollowUser(targetUserId: string) {
   revalidatePath(`/u/${targetUserId}`)
   return { error: null }
 }
+
+export async function updateAvatarUrl(avatarUrl: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Chưa đăng nhập' }
+  const { error } = await supabase
+    .from('profiles')
+    .update({ avatar_url: avatarUrl })
+    .eq('id', user.id)
+  if (error) return { error: error.message }
+  return { error: null }
+}
