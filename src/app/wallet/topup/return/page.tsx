@@ -8,7 +8,7 @@ interface Props {
 
 export default async function TopupReturnPage({ searchParams }: Props) {
   const params = await searchParams
-  const { success, amount } = await verifyVNPayReturn(params)
+  const { success, amount, mock } = await verifyVNPayReturn(params)
 
   return (
     <main className="max-w-md mx-auto px-4 py-16 text-center space-y-4">
@@ -22,7 +22,12 @@ export default async function TopupReturnPage({ searchParams }: Props) {
               <span className="font-semibold text-foreground">
                 {amount.toLocaleString('vi-VN')}đ
               </span>{' '}
-              — điểm sẽ được cộng trong vài giây.
+              {mock ? '— điểm mock, chưa kết nối DB.' : '— điểm sẽ được cộng trong vài giây.'}
+            </p>
+          )}
+          {mock && (
+            <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 inline-block">
+              ⚠️ Mock mode — set VNPAY_TMN_CODE + VNPAY_HASH_SECRET để dùng thật
             </p>
           )}
         </>

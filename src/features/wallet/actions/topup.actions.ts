@@ -7,6 +7,9 @@ const VNPAY_URL = process.env.VNPAY_URL ?? 'https://sandbox.vnpayment.vn/payment
 const VNPAY_TMN_CODE = process.env.VNPAY_TMN_CODE ?? ''
 const VNPAY_HASH_SECRET = process.env.VNPAY_HASH_SECRET ?? ''
 
+// Mock mode: khi không cấu hình VNPay, dùng mock gateway nội bộ để test
+const MOCK_MODE = !VNPAY_TMN_CODE || !VNPAY_HASH_SECRET
+
 function vnpaySign(params: Record<string, string>, secret: string): string {
   const sorted = Object.keys(params).sort().map(k => `${k}=${params[k]}`).join('&')
   return crypto.createHmac('sha512', secret).update(Buffer.from(sorted, 'utf-8')).digest('hex')
@@ -17,13 +20,11 @@ export async function createVNPayOrder(
   ipAddr: string,
 ): Promise<{ url?: string; error: string | null }> {
   if (amountVnd < 10_000 || amountVnd > 50_000_000) return { error: 'Số tiền phải từ 10.000 đến 50.000.000 VNĐ' }
-  if (!VNPAY_HASH_SECRET || !VNPAY_TMN_CODE) return { error: 'Chưa cấu hình cổng thanh toán' }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
-  // VNPay TxnRef: max 20 chars, no hyphens
   const txnRef = crypto.randomUUID().replace(/-/g, '').slice(0, 20)
 
   const { error: dbError } = await supabase.from('payments').insert({
@@ -35,13 +36,24 @@ export async function createVNPayOrder(
   })
   if (dbError) return { error: dbError.message }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const returnUrl = `${siteUrl}/wallet/topup/return`
+
+  if (MOCK_MODE) {
+    // Redirect to local mock gateway — no real VNPay credentials needed
+    const mockUrl = `${siteUrl}/mock/vnpay?` + new URLSearchParams({
+      amount: String(amountVnd),
+      txnRef,
+      returnUrl,
+    })
+    return { url: mockUrl, error: null }
+  }
+
   const createDate = new Date()
     .toISOString()
     .replace(/[-T:.Z]/g, '')
     .slice(0, 14)
 
-  const returnUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/wallet/topup/return`
-  // IPN: Edge Function receives payment callback from VNPay server-to-server
   const ipnUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/payment-webhook`
 
   const params: Record<string, string> = {
@@ -67,9 +79,16 @@ export async function createVNPayOrder(
 
 export async function verifyVNPayReturn(
   searchParams: Record<string, string>,
-): Promise<{ success: boolean; amount?: number; txnRef?: string }> {
+): Promise<{ success: boolean; amount?: number; txnRef?: string; mock?: boolean }> {
+  // Mock mode: skip signature verification
+  if (MOCK_MODE) {
+    const success = searchParams.vnp_ResponseCode === '00'
+    const amount = searchParams.vnp_Amount ? Math.round(Number(searchParams.vnp_Amount) / 100) : undefined
+    return { success, amount, txnRef: searchParams.vnp_TxnRef, mock: true }
+  }
+
   const { vnp_SecureHash, vnp_SecureHashType: _t, ...rest } = searchParams
-  if (!vnp_SecureHash || !VNPAY_HASH_SECRET) return { success: false }
+  if (!vnp_SecureHash) return { success: false }
 
   const computed = vnpaySign(rest, VNPAY_HASH_SECRET)
   if (computed !== vnp_SecureHash) return { success: false }
