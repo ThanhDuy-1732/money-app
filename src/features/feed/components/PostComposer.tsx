@@ -20,7 +20,9 @@ export function PostComposer({ userId }: { userId: string }) {
 
     for (const file of files) {
       if (file.size > 10 * 1024 * 1024) { setError('Mỗi ảnh tối đa 10MB'); continue }
-      const ext = file.name.split('.').pop() ?? 'jpg'
+      const ALLOWED_EXTS = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif'])
+      const raw = file.name.split('.').pop()?.toLowerCase() ?? ''
+      const ext = ALLOWED_EXTS.has(raw) ? raw : 'jpg'
       const path = `${userId}/${Date.now()}.${ext}`
       const { error: err } = await supabase.storage.from('post-images').upload(path, file)
       if (err) { setError(err.message); continue }

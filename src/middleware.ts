@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const isPublic = pathname === '/'
     || ['/register', '/login', '/explore'].some(r => pathname.startsWith(r))
-    || pathname.startsWith('/u/')
+    || /^\/u\/[^/]+$/.test(pathname)   // exactly /u/<username>, not /u/<x>/anything
   if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url))
   }

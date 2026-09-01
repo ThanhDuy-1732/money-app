@@ -16,7 +16,7 @@ export function TopupForm() {
     startTransition(async () => {
       // IP obtained server-side; pass placeholder — server action reads req headers when possible
       // ponytail: pass real client IP via x-forwarded-for header if behind proxy
-      const result = await createVNPayOrder(amount, '127.0.0.1')
+      const result = await createVNPayOrder(amount)
       if (result.error || !result.url) { setError(result.error ?? 'Lỗi không xác định'); return }
       window.location.href = result.url
     })

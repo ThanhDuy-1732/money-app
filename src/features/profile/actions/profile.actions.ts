@@ -44,6 +44,13 @@ export async function updateAvatarUrl(avatarUrl: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
+
+  // Only accept URLs from our own Supabase storage bucket, under this user's folder
+  const storagePrefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${user.id}/`
+  if (!avatarUrl.startsWith(storagePrefix)) {
+    return { error: 'URL avatar không hợp lệ' }
+  }
+
   const { error } = await supabase
     .from('profiles')
     .update({ avatar_url: avatarUrl })

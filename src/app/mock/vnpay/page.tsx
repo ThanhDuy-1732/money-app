@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
 
 /**
  * Mock VNPay gateway — chỉ dùng khi VNPAY_TMN_CODE / VNPAY_HASH_SECRET chưa cấu hình.
@@ -36,6 +36,7 @@ async function cancel(formData: FormData) {
 }
 
 export default async function MockVNPayPage({ searchParams }: Props) {
+  if (process.env.NODE_ENV === 'production') notFound()
   const { amount = '0', txnRef = '' } = await searchParams
   const amountNum = Number(amount)
 

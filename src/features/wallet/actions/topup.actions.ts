@@ -1,5 +1,6 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
+import { headers } from 'next/headers'
 import crypto from 'crypto'
 
 // ponytail: sandbox URL — swap to https://pay.vnpay.vn/vpcpay.html for production
@@ -8,7 +9,6 @@ const VNPAY_TMN_CODE = process.env.VNPAY_TMN_CODE ?? ''
 const VNPAY_HASH_SECRET = process.env.VNPAY_HASH_SECRET ?? ''
 
 // Mock mode: chỉ bật khi có VNPAY_MOCK=1 VÀ không phải production.
-// Không tự suy ra từ thiếu credentials — nếu production thiếu key, fail loud.
 const IS_PROD = process.env.NODE_ENV === 'production'
 const MOCK_MODE = process.env.VNPAY_MOCK === '1' && !IS_PROD
 
@@ -21,9 +21,13 @@ function vnpaySign(params: Record<string, string>, secret: string): string {
   return crypto.createHmac('sha512', secret).update(Buffer.from(sorted, 'utf-8')).digest('hex')
 }
 
+function timingSafeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b))
+}
+
 export async function createVNPayOrder(
   amountVnd: number,
-  ipAddr: string,
 ): Promise<{ url?: string; error: string | null }> {
   if (amountVnd < 10_000 || amountVnd > 50_000_000) return { error: 'Số tiền phải từ 10.000 đến 50.000.000 VNĐ' }
 
@@ -46,19 +50,15 @@ export async function createVNPayOrder(
   const returnUrl = `${siteUrl}/wallet/topup/return`
 
   if (MOCK_MODE) {
-    // Redirect to local mock gateway — no real VNPay credentials needed
-    const mockUrl = `${siteUrl}/mock/vnpay?` + new URLSearchParams({
-      amount: String(amountVnd),
-      txnRef,
-    })
+    const mockUrl = `${siteUrl}/mock/vnpay?` + new URLSearchParams({ amount: String(amountVnd), txnRef })
     return { url: mockUrl, error: null }
   }
 
-  const createDate = new Date()
-    .toISOString()
-    .replace(/[-T:.Z]/g, '')
-    .slice(0, 14)
+  // Read real client IP server-side — never accept from caller
+  const reqHeaders = await headers()
+  const ipAddr = reqHeaders.get('x-forwarded-for')?.split(',')[0].trim() ?? '127.0.0.1'
 
+  const createDate = new Date().toISOString().replace(/[-T:.Z]/g, '').slice(0, 14)
   const ipnUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/payment-webhook`
 
   const params: Record<string, string> = {
@@ -78,14 +78,12 @@ export async function createVNPayOrder(
   }
 
   params.vnp_SecureHash = vnpaySign(params, VNPAY_HASH_SECRET)
-  const paymentUrl = `${VNPAY_URL}?${new URLSearchParams(params)}`
-  return { url: paymentUrl, error: null }
+  return { url: `${VNPAY_URL}?${new URLSearchParams(params)}`, error: null }
 }
 
 export async function verifyVNPayReturn(
   searchParams: Record<string, string>,
 ): Promise<{ success: boolean; amount?: number; txnRef?: string; mock?: boolean }> {
-  // Mock mode: skip signature verification
   if (MOCK_MODE) {
     const success = searchParams.vnp_ResponseCode === '00'
     const amount = searchParams.vnp_Amount ? Math.round(Number(searchParams.vnp_Amount) / 100) : undefined
@@ -96,7 +94,7 @@ export async function verifyVNPayReturn(
   if (!vnp_SecureHash) return { success: false }
 
   const computed = vnpaySign(rest, VNPAY_HASH_SECRET)
-  if (computed !== vnp_SecureHash) return { success: false }
+  if (!timingSafeCompare(computed, vnp_SecureHash)) return { success: false }
 
   const success = searchParams.vnp_ResponseCode === '00'
   const amount = searchParams.vnp_Amount ? Math.round(Number(searchParams.vnp_Amount) / 100) : undefined

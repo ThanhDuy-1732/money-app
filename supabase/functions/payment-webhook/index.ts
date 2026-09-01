@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
 
   const gatewayTxnId = (gateway === 'vnpay' ? body['vnp_TxnRef'] : body['orderCode']) as string
 
-  // Idempotent: only update rows still in 'pending' — if already processed, .single() returns null
+  // Idempotent lock: claim the 'pending' row atomically before doing any work.
   const { data: payment, error: paymentError } = await supabase
     .from('payments')
     .update({ status: 'succeeded', gateway_txn_id: gatewayTxnId })
@@ -127,9 +127,11 @@ Deno.serve(async (req) => {
       p_reason_code: 'adjustment',
       p_reference_id: payment.id,
     })
-    // ponytail: non-atomic — payment marked succeeded before add_points; need combined RPC for full atomicity
     if (pointsError) {
       console.error('add_points error:', pointsError)
+      // Roll back to 'pending' so VNPay IPN retries can re-attempt the points award.
+      // ponytail: best-effort rollback — use a combined DB RPC for true atomicity
+      await supabase.from('payments').update({ status: 'pending' }).eq('id', payment.id)
       return new Response(JSON.stringify({ error: 'points award failed' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

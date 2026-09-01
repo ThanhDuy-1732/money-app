@@ -3,9 +3,18 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { postSchema } from '@/lib/validators/post'
 
+const IMAGE_STORAGE_PREFIX = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/post-images/`
+
 export async function createPost(data: { content?: string; image_urls?: string[] }) {
   const parsed = postSchema.safeParse(data)
   if (!parsed.success) return { error: parsed.error.issues[0].message }
+
+  // Validate all image URLs are from our own storage bucket
+  for (const url of parsed.data.image_urls ?? []) {
+    if (!url.startsWith(IMAGE_STORAGE_PREFIX)) {
+      return { error: 'URL ảnh không hợp lệ' }
+    }
+  }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
