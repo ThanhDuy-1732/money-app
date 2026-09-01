@@ -2,42 +2,41 @@ import { redirect } from 'next/navigation'
 
 /**
  * Mock VNPay gateway — chỉ dùng khi VNPAY_TMN_CODE / VNPAY_HASH_SECRET chưa cấu hình.
- * Nhận: ?amount=<VNĐ>&txnRef=<ref>&returnUrl=<url>
- * Trả về: returnUrl?vnp_TxnRef=...&vnp_Amount=...&vnp_ResponseCode=00|99
+ * Nhận: ?amount=<VNĐ>&txnRef=<ref>
+ * Luôn redirect về /wallet/topup/return (hardcoded — không nhận returnUrl từ input)
  */
 
+// Return path hardcoded — tránh open redirect khi nhận từ query/form input
+const RETURN_PATH = '/wallet/topup/return'
+
 interface Props {
-  searchParams: Promise<{ amount?: string; txnRef?: string; returnUrl?: string }>
+  searchParams: Promise<{ amount?: string; txnRef?: string }>
 }
 
 async function pay(formData: FormData) {
   'use server'
-  const returnUrl = formData.get('returnUrl') as string
-  const txnRef   = formData.get('txnRef') as string
-  const amount   = formData.get('amount') as string
-  const url = `${returnUrl}?` + new URLSearchParams({
+  const txnRef = formData.get('txnRef') as string
+  const amount = formData.get('amount') as string
+  redirect(RETURN_PATH + '?' + new URLSearchParams({
     vnp_TxnRef: txnRef,
     vnp_Amount: String(Number(amount) * 100),
     vnp_ResponseCode: '00',
     vnp_TransactionStatus: '00',
-  })
-  redirect(url)
+  }))
 }
 
 async function cancel(formData: FormData) {
   'use server'
-  const returnUrl = formData.get('returnUrl') as string
-  const txnRef   = formData.get('txnRef') as string
-  const url = `${returnUrl}?` + new URLSearchParams({
+  const txnRef = formData.get('txnRef') as string
+  redirect(RETURN_PATH + '?' + new URLSearchParams({
     vnp_TxnRef: txnRef,
     vnp_ResponseCode: '99',
     vnp_TransactionStatus: '99',
-  })
-  redirect(url)
+  }))
 }
 
 export default async function MockVNPayPage({ searchParams }: Props) {
-  const { amount = '0', txnRef = '', returnUrl = '/wallet' } = await searchParams
+  const { amount = '0', txnRef = '' } = await searchParams
   const amountNum = Number(amount)
 
   return (
@@ -76,7 +75,6 @@ export default async function MockVNPayPage({ searchParams }: Props) {
 
           <div className="space-y-2">
             <form action={pay}>
-              <input type="hidden" name="returnUrl" value={returnUrl} />
               <input type="hidden" name="txnRef" value={txnRef} />
               <input type="hidden" name="amount" value={amount} />
               <button type="submit"
@@ -86,7 +84,6 @@ export default async function MockVNPayPage({ searchParams }: Props) {
             </form>
 
             <form action={cancel}>
-              <input type="hidden" name="returnUrl" value={returnUrl} />
               <input type="hidden" name="txnRef" value={txnRef} />
               <button type="submit"
                 className="w-full border border-gray-300 hover:bg-gray-50 text-gray-600 font-medium py-3 rounded-xl transition-colors">

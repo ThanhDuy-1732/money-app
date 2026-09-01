@@ -7,8 +7,14 @@ const VNPAY_URL = process.env.VNPAY_URL ?? 'https://sandbox.vnpayment.vn/payment
 const VNPAY_TMN_CODE = process.env.VNPAY_TMN_CODE ?? ''
 const VNPAY_HASH_SECRET = process.env.VNPAY_HASH_SECRET ?? ''
 
-// Mock mode: khi không cấu hình VNPay, dùng mock gateway nội bộ để test
-const MOCK_MODE = !VNPAY_TMN_CODE || !VNPAY_HASH_SECRET
+// Mock mode: chỉ bật khi có VNPAY_MOCK=1 VÀ không phải production.
+// Không tự suy ra từ thiếu credentials — nếu production thiếu key, fail loud.
+const IS_PROD = process.env.NODE_ENV === 'production'
+const MOCK_MODE = process.env.VNPAY_MOCK === '1' && !IS_PROD
+
+if (IS_PROD && (!VNPAY_TMN_CODE || !VNPAY_HASH_SECRET)) {
+  throw new Error('[topup] VNPAY_TMN_CODE và VNPAY_HASH_SECRET phải được cấu hình trên production')
+}
 
 function vnpaySign(params: Record<string, string>, secret: string): string {
   const sorted = Object.keys(params).sort().map(k => `${k}=${params[k]}`).join('&')
@@ -44,7 +50,6 @@ export async function createVNPayOrder(
     const mockUrl = `${siteUrl}/mock/vnpay?` + new URLSearchParams({
       amount: String(amountVnd),
       txnRef,
-      returnUrl,
     })
     return { url: mockUrl, error: null }
   }
