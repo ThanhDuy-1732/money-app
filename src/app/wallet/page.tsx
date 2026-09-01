@@ -18,7 +18,10 @@ export default async function WalletPage() {
   return (
     <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
       <BalanceCard balance={profile?.points_balance ?? 0} streak={profile?.streak_count ?? 0} />
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <Button asChild size="sm" variant="outline">
+          <Link href="/wallet/topup">Nạp điểm</Link>
+        </Button>
         <Button asChild size="sm">
           <Link href="/redeem">Đổi điểm</Link>
         </Button>

@@ -232,6 +232,36 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          id: string
+          user_id: string
+          amount_vnd: number
+          gateway: 'payos' | 'vnpay' | 'momo'
+          gateway_txn_id: string | null
+          status: 'pending' | 'succeeded' | 'failed'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          amount_vnd: number
+          gateway: 'payos' | 'vnpay' | 'momo'
+          gateway_txn_id?: string | null
+          status?: 'pending' | 'succeeded' | 'failed'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          amount_vnd?: number
+          gateway?: 'payos' | 'vnpay' | 'momo'
+          gateway_txn_id?: string | null
+          status?: 'pending' | 'succeeded' | 'failed'
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
