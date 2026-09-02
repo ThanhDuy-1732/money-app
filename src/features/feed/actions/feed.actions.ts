@@ -46,6 +46,49 @@ export async function unlikePost(postId: string) {
   return { error: error?.message ?? null }
 }
 
+const FEED_PAGE_SIZE = 10
+
+export async function fetchFeedPage(
+  cursor: string | null,
+  userId: string | null,
+  followingOnly: boolean
+) {
+  const supabase = await createClient()
+
+  const baseSelect = `
+    id, user_id, content, image_urls, like_count, comment_count, created_at,
+    profiles(display_name, avatar_url),
+    comments(id, content, created_at, profiles(display_name, avatar_url))
+  `
+
+  let ids: string[] | null = null
+  if (followingOnly && userId) {
+    const { data: following } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', userId)
+    ids = [userId, ...(following?.map(f => f.following_id) ?? [])]
+  }
+
+  const q = supabase
+    .from('posts')
+    .select(baseSelect)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(FEED_PAGE_SIZE)
+
+  // Apply filters inline on one query to avoid TS inference narrowing to never
+  const { data: rawPosts } = await (ids
+    ? (cursor ? q.in('user_id', ids).lt('created_at', cursor) : q.in('user_id', ids))
+    : (cursor ? q.lt('created_at', cursor) : q)
+  )
+
+  const posts = (rawPosts ?? []) as Array<Record<string, unknown> & { created_at: string }>
+  const nextCursor = posts.length === FEED_PAGE_SIZE ? posts[posts.length - 1].created_at : null
+
+  return { posts, nextCursor }
+}
+
 export async function createComment(postId: string, content: string) {
   if (content.trim().length === 0 || content.length > 300) return { error: 'Nội dung không hợp lệ' }
   const supabase = await createClient()

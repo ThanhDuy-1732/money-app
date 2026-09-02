@@ -1,36 +1,34 @@
-import { createClient } from '@/lib/supabase/server'
+import { fetchFeedPage } from '../actions/feed.actions'
 import { PostCard } from './PostCard'
+import { LoadMoreFeed } from './LoadMoreFeed'
+import type { Database } from '@/lib/types/database'
 
-export async function FeedList({ userId, followingOnly = false }: { userId?: string; followingOnly?: boolean }) {
-  const supabase = await createClient()
+type FeedPost = Database['public']['Tables']['posts']['Row'] & {
+  profiles: { display_name: string; avatar_url: string | null }
+  comments: Array<Database['public']['Tables']['comments']['Row'] & {
+    profiles: { display_name: string; avatar_url: string | null }
+  }>
+}
 
-  let query = supabase
-    .from('posts')
-    .select(`
-      *,
-      profiles(display_name, avatar_url),
-      comments(*, profiles(display_name, avatar_url))
-    `)
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-    .limit(20)
+export async function FeedList({
+  userId,
+  followingOnly = false,
+}: {
+  userId?: string
+  followingOnly?: boolean
+}) {
+  const { posts, nextCursor } = await fetchFeedPage(null, userId ?? null, followingOnly)
 
-  if (followingOnly && userId) {
-    const { data: following } = await supabase
-      .from('follows')
-      .select('following_id')
-      .eq('follower_id', userId)
-    const ids = [userId, ...(following?.map(f => f.following_id) ?? [])]
-    query = query.in('user_id', ids)
+  if (!posts.length) {
+    return <p className="text-center text-gray-400 py-8">Chưa có bài đăng nào.</p>
   }
-
-  const { data: posts } = await query
-  if (!posts?.length) return <p className="text-center text-gray-400 py-8">Chưa có bài đăng nào.</p>
-  const typedPosts = posts as any[]
 
   return (
     <div className="space-y-4">
-      {typedPosts.map(post => <PostCard key={post.id} post={post} currentUserId={userId} />)}
+      {(posts as FeedPost[]).map(post => (
+        <PostCard key={post.id} post={post} currentUserId={userId} />
+      ))}
+      {userId && <LoadMoreFeed initialCursor={nextCursor} userId={userId} followingOnly={followingOnly} />}
     </div>
   )
 }

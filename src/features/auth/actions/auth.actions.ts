@@ -24,9 +24,12 @@ export async function verifyOtp(email: string, token: string) {
   if (!parsed.success) return { error: parsed.error.issues[0].message }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.verifyOtp({ email, token: parsed.data.otp, type: 'email' })
+  const { data, error } = await supabase.auth.verifyOtp({ email, token: parsed.data.otp, type: 'email' })
   if (error) return { error: error.message }
-  redirect('/feed')
+  // Show welcome bonus banner for brand-new signups (account < 10 s old)
+  const isNew = data.user?.created_at &&
+    Date.now() - new Date(data.user.created_at).getTime() < 10_000
+  redirect(isNew ? '/feed?welcome=1' : '/feed')
 }
 
 export async function signInWithEmail(email: string) {
