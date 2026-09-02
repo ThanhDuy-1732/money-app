@@ -34,16 +34,16 @@ export async function likePost(postId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
-  await supabase.from('likes').insert({ post_id: postId, user_id: user.id })
-  return { error: null }
+  const { error } = await supabase.from('likes').insert({ post_id: postId, user_id: user.id })
+  return { error: error?.message ?? null }
 }
 
 export async function unlikePost(postId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
-  await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', user.id)
-  return { error: null }
+  const { error } = await supabase.from('likes').delete().eq('post_id', postId).eq('user_id', user.id)
+  return { error: error?.message ?? null }
 }
 
 export async function createComment(postId: string, content: string) {

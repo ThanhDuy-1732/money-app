@@ -10,11 +10,15 @@ export function LikeButton({
   const [count, setCount] = useState(initialCount)
 
   async function toggle() {
+    const prev = { liked, count }
     const next = !liked
     setLiked(next)
     setCount(c => c + (next ? 1 : -1))
-    if (next) await likePost(postId)
-    else await unlikePost(postId)
+    const result = next ? await likePost(postId) : await unlikePost(postId)
+    if (result?.error) {
+      setLiked(prev.liked)
+      setCount(prev.count)
+    }
   }
 
   return (

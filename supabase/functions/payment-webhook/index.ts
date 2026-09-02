@@ -103,43 +103,30 @@ Deno.serve(async (req) => {
 
   const gatewayTxnId = (gateway === 'vnpay' ? body['vnp_TxnRef'] : body['orderCode']) as string
 
-  // Idempotent lock: claim the 'pending' row atomically before doing any work.
-  const { data: payment, error: paymentError } = await supabase
-    .from('payments')
-    .update({ status: 'succeeded', gateway_txn_id: gatewayTxnId })
-    .eq('gateway_txn_id', gatewayTxnId)
-    .eq('status', 'pending')
-    .select('id, user_id, amount_vnd')
-    .single()
+  // Atomic: complete_payment RPC marks succeeded + awards points in one DB transaction.
+  // If it throws, the transaction rolls back and payment stays 'pending' — IPN can retry.
+  const { data: result, error: rpcError } = await supabase.rpc('complete_payment', {
+    p_gateway_txn_id: gatewayTxnId,
+    p_gateway: gateway,
+  })
 
-  if (paymentError || !payment) {
-    console.error('Payment not found or already processed:', paymentError)
-    return new Response(JSON.stringify({ ok: true, skipped: true }), {
+  if (rpcError) {
+    console.error('complete_payment rpc error:', rpcError)
+    return new Response(JSON.stringify({ error: rpcError.message }), {
+      status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
 
-  const pointsDelta = Math.floor(payment.amount_vnd / 1000) * POINTS_PER_1000_VND
-  if (pointsDelta > 0) {
-    const { error: pointsError } = await supabase.rpc('add_points', {
-      p_user_id: payment.user_id,
-      p_delta: pointsDelta,
-      p_reason_code: 'adjustment',
-      p_reference_id: payment.id,
+  if (!result?.ok) {
+    console.error('complete_payment returned error:', result?.error)
+    return new Response(JSON.stringify({ error: result?.error ?? 'unknown' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
-    if (pointsError) {
-      console.error('add_points error:', pointsError)
-      // Roll back to 'pending' so VNPay IPN retries can re-attempt the points award.
-      // ponytail: best-effort rollback — use a combined DB RPC for true atomicity
-      await supabase.from('payments').update({ status: 'pending' }).eq('id', payment.id)
-      return new Response(JSON.stringify({ error: 'points award failed' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
   }
 
-  return new Response(JSON.stringify({ ok: true }), {
+  return new Response(JSON.stringify(result), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
 })

@@ -18,7 +18,14 @@ export function NotificationBadge({ userId, initialCount }: { userId: string; in
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
-        () => setCount(0) // ponytail: resets to 0 on any update; if partial mark-as-read needed, refetch count instead
+        async () => {
+          const { count } = await supabase
+            .from('notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .is('read_at', null)
+          setCount(count ?? 0)
+        }
       )
       .subscribe()
     return () => { supabase.removeChannel(channel) }

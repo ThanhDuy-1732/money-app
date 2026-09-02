@@ -1,12 +1,13 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
+import crypto from 'crypto'
 
 export async function getOrCreateReferralCode(): Promise<{ code: string | null; error: string | null }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { code: null, error: 'Chưa đăng nhập' }
 
-  const code = user.id.slice(0, 8)
+  const code = crypto.createHash('sha256').update(user.id).digest('hex').slice(0, 8)
   return { code, error: null }
 }
 
