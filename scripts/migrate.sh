@@ -56,7 +56,7 @@ run_sql "sql/migrations/08a-fix-count-triggers.sql"
 run_sql "sql/migrations/08b-phase2-core.sql"
 run_sql "sql/migrations/08c-phase2-budgets.sql"
 run_sql "sql/migrations/08d-phase2-savings.sql"
-# run_sql "sql/migrations/08e-phase2-productivity.sql"
+run_sql "sql/migrations/08e-phase2-productivity.sql"
 run_sql "sql/migrations/08f-phase2-billing.sql"
 # run_sql "sql/migrations/09-extend-complete-payment.sql"
 
