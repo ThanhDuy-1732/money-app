@@ -2,7 +2,8 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { budgetSchema } from '@/lib/validators/finance'
-import { getSubscriptionStatus, checkFreeLimit } from '@/features/billing/subscription.actions'
+import { getSubscriptionStatus } from '@/features/billing/subscription.actions'
+import { FREE_LIMITS } from '@/lib/constants/limits'
 
 export async function upsertBudget(raw: unknown) {
   const parsed = budgetSchema.safeParse(raw)
@@ -12,32 +13,20 @@ export async function upsertBudget(raw: unknown) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
-  // Free tier check: only on new budget creation, not edits
+  // Atomic upsert with per-user advisory lock in DB (09b migration).
+  // Free tier limit enforced inside the RPC; premium users get p_max_budgets=999.
   const { isPremium } = await getSubscriptionStatus()
-  if (!isPremium) {
-    const monthKey = `${parsed.data.month}` // already YYYY-MM-01 from schema
-    const { count: existingCount } = await supabase
-      .from('budgets').select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id).eq('category_id', parsed.data.category_id).eq('month', monthKey)
-    if ((existingCount ?? 0) === 0) {
-      // New budget — enforce limit for this month only
-      // ponytail: two concurrent inserts for different categories can both pass; fix with DB CHECK or serializable txn if needed
-      const { count } = await supabase
-        .from('budgets').select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id).eq('month', monthKey)
-      const limitCheck = checkFreeLimit('budgets', count ?? 0)
-      if (!limitCheck.allowed) return { error: limitCheck.error ?? 'Đã đạt giới hạn gói Free' }
-    }
-  }
-
-  const { error } = await supabase.from('budgets').upsert({
-    user_id: user.id,
-    category_id: parsed.data.category_id,
-    month: parsed.data.month, // YYYY-MM-01
-    limit_amount: parsed.data.limit_amount,
-  }, { onConflict: 'user_id,category_id,month' })
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase.rpc as any)('upsert_budget_with_limit', {
+    p_category_id: parsed.data.category_id,
+    p_month: parsed.data.month, // YYYY-MM-01
+    p_limit_amount: parsed.data.limit_amount,
+    p_max_budgets: isPremium ? 999 : FREE_LIMITS.budgets,
+  })
   if (error) return { error: error.message }
+  const result = data as { error: string | null }
+  if (result.error) return { error: result.error }
+
   revalidatePath('/finance/budgets')
   return { error: null }
 }
