@@ -21,6 +21,7 @@ export async function upsertBudget(raw: unknown) {
       .eq('user_id', user.id).eq('category_id', parsed.data.category_id).eq('month', monthKey)
     if ((existingCount ?? 0) === 0) {
       // New budget — enforce limit for this month only
+      // ponytail: two concurrent inserts for different categories can both pass; fix with DB CHECK or serializable txn if needed
       const { count } = await supabase
         .from('budgets').select('*', { count: 'exact', head: true })
         .eq('user_id', user.id).eq('month', monthKey)
