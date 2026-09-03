@@ -30,6 +30,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/feed">Feed</Link>
                 <Link href="/explore">Khám phá</Link>
                 <Link href="/wallet">Ví</Link>
+                <Link href="/finance">💰 Tài chính</Link>
+                <Link href="/notes">📝 Ghi chú</Link>
+                <Link href="/todos">✅ To-do</Link>
+                <Link href="/billing/upgrade">⭐ Premium</Link>
                 <Link href="/invite">Mời bạn</Link>
                 <Link href="/notifications">🔔</Link>
                 <Link href="/profile">Hồ sơ</Link>
