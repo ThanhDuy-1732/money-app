@@ -12,17 +12,21 @@ export async function upsertBudget(raw: unknown) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
-  // Free tier check: count active budgets this month
+  // Free tier check: only on new budget creation, not edits
   const { isPremium } = await getSubscriptionStatus()
   if (!isPremium) {
-    const thisMonth = new Date().toISOString().slice(0, 7)
-    const { count } = await supabase
-      .from('budgets')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .gte('month', `${thisMonth}-01`)
-    const limitCheck = checkFreeLimit('budgets', count ?? 0)
-    if (!limitCheck.allowed) return { error: limitCheck.error ?? 'Đã đạt giới hạn gói Free' }
+    const monthKey = `${parsed.data.month}` // already YYYY-MM-01 from schema
+    const { count: existingCount } = await supabase
+      .from('budgets').select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id).eq('category_id', parsed.data.category_id).eq('month', monthKey)
+    if ((existingCount ?? 0) === 0) {
+      // New budget — enforce limit for this month only
+      const { count } = await supabase
+        .from('budgets').select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id).eq('month', monthKey)
+      const limitCheck = checkFreeLimit('budgets', count ?? 0)
+      if (!limitCheck.allowed) return { error: limitCheck.error ?? 'Đã đạt giới hạn gói Free' }
+    }
   }
 
   const { error } = await supabase.from('budgets').upsert({

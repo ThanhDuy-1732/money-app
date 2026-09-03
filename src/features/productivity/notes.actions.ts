@@ -54,7 +54,7 @@ export async function togglePin(id: string) {
   const { data: note } = await supabase.from('notes').select('pinned').eq('id', id).eq('user_id', user.id).single()
   if (!note) return { error: 'Không tìm thấy ghi chú' }
 
-  const { error } = await supabase.from('notes').update({ pinned: !note.pinned }).eq('id', id)
+  const { error } = await supabase.from('notes').update({ pinned: !note.pinned }).eq('id', id).eq('user_id', user.id)
   if (error) return { error: error.message }
   revalidatePath('/notes')
   return { error: null }

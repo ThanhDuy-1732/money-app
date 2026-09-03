@@ -39,7 +39,7 @@ export async function toggleDone(id: string) {
   const { data: todo } = await supabase.from('todos').select('done').eq('id', id).eq('user_id', user.id).single()
   if (!todo) return { error: 'Không tìm thấy' }
 
-  const { error } = await supabase.from('todos').update({ done: !todo.done }).eq('id', id)
+  const { error } = await supabase.from('todos').update({ done: !todo.done }).eq('id', id).eq('user_id', user.id)
   if (error) return { error: error.message }
   revalidatePath('/todos')
   return { error: null }
