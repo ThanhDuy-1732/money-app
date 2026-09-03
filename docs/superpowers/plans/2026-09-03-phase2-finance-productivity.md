@@ -18,8 +18,8 @@
 - `subscriptions`: client never INSERT/UPDATE directly — only via `subscribe_premium_with_points()` RPC or webhook service_role
 - Free tier limits live only in `src/lib/constants/limits.ts`; check at Server Action layer before every insert that creates new records
 - Test runner: `npx vitest run` (no `test` npm script — invoke vitest directly)
-- **Docker setup**: App dùng `docker-compose.yml` tự quản lý (KHÔNG phải `npx supabase start`). DB expose port **5432** (không phải 54322).
-- **DB_URL**: `postgresql://postgres:postgres@localhost:5432/postgres` — dùng cho mọi lệnh psql
+- **Docker setup**: App dùng `npx supabase start` (Supabase CLI). DB expose port **54322**. Container DB: `supabase_db_money-app`. (`docker-compose.yml` có trong repo nhưng không dùng.)
+- **DB_URL**: `postgresql://postgres:postgres@127.0.0.1:54322/postgres` — dùng cho mọi lệnh psql
 - **Chạy migrations**: dùng `scripts/migrate.sh` (xem Task 0) thay vì chạy từng file riêng lẻ. Nếu không có psql local: `./scripts/migrate.sh --docker`
 - `points_ledger.reference_id` column name is `reference_id` (NOT `ref_id` — stub in database.ts was wrong)
 
@@ -90,7 +90,7 @@ Tất cả services phải ở trạng thái `Up`. Service `db` phải healthy.
 
 Nếu có psql local:
 ```bash
-PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -c "SELECT version();"
+PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -c "SELECT version();"
 ```
 
 Nếu không có psql local (dùng docker exec):
@@ -132,7 +132,7 @@ git add scripts/migrate.sh
 git commit -m "chore: add migrate.sh script for docker-compose DB setup
 
 Supports both local psql and docker exec modes.
-DB runs on localhost:5432 via docker-compose (not Supabase CLI port 54322).
+DB runs via Supabase CLI (npx supabase start) on port 54322, container: supabase_db_money-app.
 
 Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 ```
@@ -194,9 +194,9 @@ $$;
 
 ```bash
 # Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
-# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# psql local:  PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f <file>
 # docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
-DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 psql $DB_URL -f sql/migrations/08a-fix-count-triggers.sql
 ```
 
@@ -574,9 +574,9 @@ ON CONFLICT DO NOTHING;
 
 ```bash
 # Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
-# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# psql local:  PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f <file>
 # docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
-DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 psql $DB_URL -f sql/migrations/08b-phase2-core.sql
 ```
 
@@ -868,9 +868,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.budgets TO authenticated;
 
 ```bash
 # Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
-# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# psql local:  PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f <file>
 # docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
-DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 psql $DB_URL -f sql/migrations/08c-phase2-budgets.sql
 ```
 
@@ -1123,9 +1123,9 @@ FOR EACH ROW EXECUTE FUNCTION public.check_savings_goal_achieved();
 
 ```bash
 # Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
-# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# psql local:  PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f <file>
 # docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
-DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 psql $DB_URL -f sql/migrations/08d-phase2-savings.sql
 ```
 
@@ -1362,9 +1362,9 @@ FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 ```bash
 # Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
-# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# psql local:  PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f <file>
 # docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
-DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 psql $DB_URL -f sql/migrations/08e-phase2-productivity.sql
 ```
 
@@ -1712,9 +1712,9 @@ GRANT EXECUTE ON FUNCTION public.subscribe_premium_with_points() TO authenticate
 
 ```bash
 # Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
-# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# psql local:  PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f <file>
 # docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
-DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 psql $DB_URL -f sql/migrations/08f-phase2-billing.sql
 ```
 
@@ -1956,9 +1956,9 @@ GRANT EXECUTE ON FUNCTION public.complete_payment(text, text) TO service_role;
 
 ```bash
 # Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
-# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# psql local:  PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f <file>
 # docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
-DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 psql $DB_URL -f sql/migrations/09-extend-complete-payment.sql
 ```
 

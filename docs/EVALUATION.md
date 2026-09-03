@@ -99,7 +99,7 @@
 npx supabase start
 
 # 2. Chạy migrations theo thứ tự
-DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
 psql $DB_URL -f docs/requirement/schema.sql
 psql $DB_URL -f sql/triggers/01-signup-bonus.sql
 psql $DB_URL -f sql/triggers/02-profile-complete.sql

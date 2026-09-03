@@ -9,12 +9,12 @@
 
 set -euo pipefail
 
-DB_HOST="${DB_HOST:-localhost}"
-DB_PORT="${DB_PORT:-5432}"
+DB_HOST="${DB_HOST:-127.0.0.1}"
+DB_PORT="${DB_PORT:-54322}"        # Supabase CLI port (npx supabase start)
 DB_NAME="${DB_NAME:-postgres}"
 DB_USER="${DB_USER:-postgres}"
 DB_PASS="${DB_PASS:-postgres}"
-DB_CONTAINER="${DB_CONTAINER:-money-app-db-1}"  # tên container docker compose
+DB_CONTAINER="${DB_CONTAINER:-supabase_db_money-app}"  # Supabase CLI container name
 
 USE_DOCKER=0
 if [[ "${1:-}" == "--docker" ]]; then
