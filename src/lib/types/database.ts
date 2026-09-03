@@ -7,33 +7,43 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           content: string
@@ -181,6 +191,7 @@ export type Database = {
           gateway: string
           gateway_txn_id: string | null
           id: string
+          payment_type: string
           status: string
           user_id: string
         }
@@ -190,6 +201,7 @@ export type Database = {
           gateway: string
           gateway_txn_id?: string | null
           id?: string
+          payment_type?: string
           status?: string
           user_id: string
         }
@@ -199,6 +211,7 @@ export type Database = {
           gateway?: string
           gateway_txn_id?: string | null
           id?: string
+          payment_type?: string
           status?: string
           user_id?: string
         }
@@ -447,6 +460,92 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          expires_at: string
+          id: string
+          payment_method: string
+          plan: string
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          expires_at: string
+          id?: string
+          payment_method: string
+          plan?: string
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string
+          id?: string
+          payment_method?: string
+          plan?: string
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          amount_vnd: number
+          category_id: string | null
+          created_at: string
+          id: string
+          note: string | null
+          occurred_at: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount_vnd: number
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          occurred_at?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount_vnd?: number
+          category_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          occurred_at?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -467,6 +566,7 @@ export type Database = {
       }
       complete_referral: { Args: { p_referred_id: string }; Returns: undefined }
       redeem_reward: { Args: { p_reward_id: string }; Returns: string }
+      subscribe_premium_with_points: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
@@ -595,9 +695,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
