@@ -1,269 +1,605 @@
-// Stub — regenerate after: npx supabase gen types typescript --local > src/lib/types/database.ts
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          id: string
-          display_name: string
-          bio: string | null
-          avatar_url: string | null
-          points_balance: number
-          streak_count: number
-          last_login_date: string | null
-          created_at: string
-        }
-        Insert: {
-          id: string
-          display_name: string
-          bio?: string | null
-          avatar_url?: string | null
-          points_balance?: number
-          streak_count?: number
-          last_login_date?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          display_name?: string
-          bio?: string | null
-          avatar_url?: string | null
-          points_balance?: number
-          streak_count?: number
-          last_login_date?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
-      posts: {
-        Row: {
-          id: string
-          user_id: string
-          content: string | null
-          image_urls: Json
-          like_count: number
-          comment_count: number
-          deleted_at: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          content?: string | null
-          image_urls?: Json
-          like_count?: number
-          comment_count?: number
-          deleted_at?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          content?: string | null
-          image_urls?: Json
-          like_count?: number
-          comment_count?: number
-          deleted_at?: string | null
-          created_at?: string
-        }
-        Relationships: []
-      }
       comments: {
         Row: {
+          content: string
+          created_at: string
           id: string
           post_id: string
           user_id: string
-          content: string
-          created_at: string
         }
         Insert: {
+          content: string
+          created_at?: string
           id?: string
           post_id: string
           user_id: string
-          content: string
-          created_at?: string
         }
         Update: {
-          id?: string
-          post_id?: string
-          user_id?: string
           content?: string
           created_at?: string
-        }
-        Relationships: []
-      }
-      likes: {
-        Row: {
-          post_id: string
-          user_id: string
-          created_at: string
-        }
-        Insert: {
-          post_id: string
-          user_id: string
-          created_at?: string
-        }
-        Update: {
+          id?: string
           post_id?: string
           user_id?: string
-          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       follows: {
         Row: {
+          created_at: string
           follower_id: string
           following_id: string
-          created_at: string
         }
         Insert: {
+          created_at?: string
           follower_id: string
           following_id: string
-          created_at?: string
         }
         Update: {
+          created_at?: string
           follower_id?: string
           following_id?: string
-          created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      points_ledger: {
+      likes: {
         Row: {
-          id: string
-          user_id: string
-          delta: number
-          reason_code: string
-          ref_id: string | null
           created_at: string
+          post_id: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          delta: number
-          reason_code: string
-          ref_id?: string | null
           created_at?: string
+          post_id: string
+          user_id: string
         }
         Update: {
-          id?: string
+          created_at?: string
+          post_id?: string
           user_id?: string
-          delta?: number
-          reason_code?: string
-          ref_id?: string | null
-          created_at?: string
         }
-        Relationships: []
-      }
-      rewards: {
-        Row: {
-          id: string
-          name: string
-          description: string | null
-          points_cost: number
-          active: boolean
-        }
-        Insert: {
-          id?: string
-          name: string
-          description?: string | null
-          points_cost: number
-          active?: boolean
-        }
-        Update: {
-          id?: string
-          name?: string
-          description?: string | null
-          points_cost?: number
-          active?: boolean
-        }
-        Relationships: []
-      }
-      referrals: {
-        Row: {
-          id: string
-          referrer_id: string
-          referred_id: string
-          status: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          referrer_id: string
-          referred_id: string
-          status?: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          referrer_id?: string
-          referred_id?: string
-          status?: string
-          created_at?: string
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
-          id: string
-          user_id: string
-          type: string
-          payload: Json | null
-          read_at: string | null
           created_at: string
+          id: string
+          payload: Json
+          read_at: string | null
+          type: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
-          type: string
-          payload?: Json | null
-          read_at?: string | null
           created_at?: string
+          id?: string
+          payload?: Json
+          read_at?: string | null
+          type: string
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
-          type?: string
-          payload?: Json | null
-          read_at?: string | null
           created_at?: string
+          id?: string
+          payload?: Json
+          read_at?: string | null
+          type?: string
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
-          id: string
-          user_id: string
           amount_vnd: number
-          gateway: 'payos' | 'vnpay' | 'momo'
-          gateway_txn_id: string | null
-          status: 'pending' | 'succeeded' | 'failed'
           created_at: string
+          gateway: string
+          gateway_txn_id: string | null
+          id: string
+          status: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          user_id: string
           amount_vnd: number
-          gateway: 'payos' | 'vnpay' | 'momo'
-          gateway_txn_id?: string | null
-          status?: 'pending' | 'succeeded' | 'failed'
           created_at?: string
+          gateway: string
+          gateway_txn_id?: string | null
+          id?: string
+          status?: string
+          user_id: string
         }
         Update: {
-          id?: string
-          user_id?: string
           amount_vnd?: number
-          gateway?: 'payos' | 'vnpay' | 'momo'
-          gateway_txn_id?: string | null
-          status?: 'pending' | 'succeeded' | 'failed'
           created_at?: string
+          gateway?: string
+          gateway_txn_id?: string | null
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      points_ledger: {
+        Row: {
+          balance_after: number
+          created_at: string
+          delta: number
+          id: string
+          reason_code: string
+          reference_id: string | null
+          user_id: string
+        }
+        Insert: {
+          balance_after: number
+          created_at?: string
+          delta: number
+          id?: string
+          reason_code: string
+          reference_id?: string | null
+          user_id: string
+        }
+        Update: {
+          balance_after?: number
+          created_at?: string
+          delta?: number
+          id?: string
+          reason_code?: string
+          reference_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "points_ledger_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          comment_count: number
+          content: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          image_urls: Json
+          like_count: number
+          user_id: string
+        }
+        Insert: {
+          comment_count?: number
+          content?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          image_urls?: Json
+          like_count?: number
+          user_id: string
+        }
+        Update: {
+          comment_count?: number
+          content?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          image_urls?: Json
+          like_count?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string
+          id: string
+          last_login_date: string | null
+          points_balance: number
+          status: string
+          streak_count: number
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name: string
+          id: string
+          last_login_date?: string | null
+          points_balance?: number
+          status?: string
+          streak_count?: number
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          last_login_date?: string | null
+          points_balance?: number
+          status?: string
+          streak_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      redemptions: {
+        Row: {
+          created_at: string
+          id: string
+          points_spent: number
+          reward_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          points_spent: number
+          reward_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          points_spent?: number
+          reward_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "redemptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_id?: string
+          referrer_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          points_cost: number
+          stock: number | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          points_cost: number
+          stock?: number | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          points_cost?: number
+          stock?: number | null
         }
         Relationships: []
       }
     }
-    Views: Record<string, never>
-    Functions: Record<string, never>
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      add_points: {
+        Args: {
+          p_delta: number
+          p_reason_code: string
+          p_reference_id?: string
+          p_user_id: string
+        }
+        Returns: number
+      }
+      complete_payment: {
+        Args: { p_gateway: string; p_gateway_txn_id: string }
+        Returns: Json
+      }
+      complete_referral: { Args: { p_referred_id: string }; Returns: undefined }
+      redeem_reward: { Args: { p_reward_id: string }; Returns: string }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
 }
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {},
+  },
+} as const
+
