@@ -54,7 +54,7 @@ run_sql "sql/migrations/07-complete-payment-rpc.sql"
 # Phase 2 migrations (bỏ comment khi đã tạo file)
 run_sql "sql/migrations/08a-fix-count-triggers.sql"
 run_sql "sql/migrations/08b-phase2-core.sql"
-# run_sql "sql/migrations/08c-phase2-budgets.sql"
+run_sql "sql/migrations/08c-phase2-budgets.sql"
 # run_sql "sql/migrations/08d-phase2-savings.sql"
 # run_sql "sql/migrations/08e-phase2-productivity.sql"
 run_sql "sql/migrations/08f-phase2-billing.sql"
