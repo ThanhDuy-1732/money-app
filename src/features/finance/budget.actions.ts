@@ -2,8 +2,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { budgetSchema } from '@/lib/validators/finance'
-import { FREE_LIMITS } from '@/lib/constants/limits'
-import { getSubscriptionStatus } from '@/features/billing/subscription.actions'
+import { getSubscriptionStatus, checkFreeLimit } from '@/features/billing/subscription.actions'
 
 export async function upsertBudget(raw: unknown) {
   const parsed = budgetSchema.safeParse(raw)
@@ -22,9 +21,8 @@ export async function upsertBudget(raw: unknown) {
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .gte('month', `${thisMonth}-01`)
-    if ((count ?? 0) >= FREE_LIMITS.budgets) {
-      return { error: `Gói Free tối đa ${FREE_LIMITS.budgets} ngân sách/tháng. Nâng cấp Premium để tạo thêm.` }
-    }
+    const limitCheck = checkFreeLimit('budgets', count ?? 0)
+    if (!limitCheck.allowed) return { error: limitCheck.error ?? 'Đã đạt giới hạn gói Free' }
   }
 
   const { error } = await supabase.from('budgets').upsert({
