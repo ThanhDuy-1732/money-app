@@ -18,7 +18,9 @@
 - `subscriptions`: client never INSERT/UPDATE directly — only via `subscribe_premium_with_points()` RPC or webhook service_role
 - Free tier limits live only in `src/lib/constants/limits.ts`; check at Server Action layer before every insert that creates new records
 - Test runner: `npx vitest run` (no `test` npm script — invoke vitest directly)
-- DB connection for psql: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+- **Docker setup**: App dùng `docker-compose.yml` tự quản lý (KHÔNG phải `npx supabase start`). DB expose port **5432** (không phải 54322).
+- **DB_URL**: `postgresql://postgres:postgres@localhost:5432/postgres` — dùng cho mọi lệnh psql
+- **Chạy migrations**: dùng `scripts/migrate.sh` (xem Task 0) thay vì chạy từng file riêng lẻ. Nếu không có psql local: `./scripts/migrate.sh --docker`
 - `points_ledger.reference_id` column name is `reference_id` (NOT `ref_id` — stub in database.ts was wrong)
 
 ---
@@ -63,6 +65,77 @@
 **New test files:**
 - `src/lib/validators/__tests__/finance.validators.test.ts`
 - `src/features/billing/__tests__/subscription.actions.test.ts` (Zod + pure logic only)
+
+---
+
+## Task 0: Migration script + Docker setup kiểm tra
+
+**Files:**
+- Create: `scripts/migrate.sh` ✅ (đã tạo sẵn)
+- Modify: `scripts/migrate.sh` — bỏ comment từng dòng Phase 2 khi tạo file migration tương ứng
+
+**Interfaces:**
+- Produces: một lệnh duy nhất để chạy toàn bộ migrations theo thứ tự
+
+- [ ] **Step 1: Xác nhận Docker đang chạy và DB accessible**
+
+```bash
+docker compose ps  # Kiểm tra services đang up
+docker compose logs db --tail=5  # Xác nhận DB healthy
+```
+
+Tất cả services phải ở trạng thái `Up`. Service `db` phải healthy.
+
+- [ ] **Step 2: Test kết nối DB**
+
+Nếu có psql local:
+```bash
+PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -c "SELECT version();"
+```
+
+Nếu không có psql local (dùng docker exec):
+```bash
+docker exec money-app-db-1 psql -U postgres -d postgres -c "SELECT version();"
+```
+
+Nếu tên container khác (container name tự động thêm prefix tên thư mục), kiểm tra bằng:
+```bash
+docker compose ps --format "table {{.Name}}\t{{.Status}}"
+```
+Rồi set biến: `DB_CONTAINER=<tên-container-db>` trước khi chạy `--docker`.
+
+- [ ] **Step 3: Chạy migrations Phase 1 để verify script hoạt động**
+
+```bash
+# Dùng psql local:
+./scripts/migrate.sh
+
+# Hoặc dùng docker exec:
+./scripts/migrate.sh --docker
+```
+
+Mỗi migration phải in `▶ Running: <file>` rồi kết thúc không có lỗi.
+
+- [ ] **Step 4: Verify schema cơ bản tồn tại**
+
+```bash
+docker exec money-app-db-1 psql -U postgres -d postgres \
+  -c "\dt public.*" | grep -E "profiles|posts|likes|payments"
+```
+
+Expected: tất cả 4 bảng đều xuất hiện.
+
+- [ ] **Step 5: Commit (nếu chưa commit scripts/migrate.sh)**
+
+```bash
+git add scripts/migrate.sh
+git commit -m "chore: add migrate.sh script for docker-compose DB setup
+
+Supports both local psql and docker exec modes.
+DB runs on localhost:5432 via docker-compose (not Supabase CLI port 54322).
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+```
 
 ---
 
@@ -120,7 +193,10 @@ $$;
 - [ ] **Step 3: Run the migration**
 
 ```bash
-DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+# Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
+# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
+DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 psql $DB_URL -f sql/migrations/08a-fix-count-triggers.sql
 ```
 
@@ -497,7 +573,10 @@ ON CONFLICT DO NOTHING;
 - [ ] **Step 2: Run migration**
 
 ```bash
-DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+# Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
+# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
+DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 psql $DB_URL -f sql/migrations/08b-phase2-core.sql
 ```
 
@@ -788,7 +867,10 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.budgets TO authenticated;
 - [ ] **Step 2: Run and verify**
 
 ```bash
-DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+# Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
+# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
+DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 psql $DB_URL -f sql/migrations/08c-phase2-budgets.sql
 ```
 
@@ -1040,7 +1122,10 @@ FOR EACH ROW EXECUTE FUNCTION public.check_savings_goal_achieved();
 - [ ] **Step 2: Run and verify**
 
 ```bash
-DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+# Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
+# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
+DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 psql $DB_URL -f sql/migrations/08d-phase2-savings.sql
 ```
 
@@ -1276,7 +1361,10 @@ FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 - [ ] **Step 2: Run and verify**
 
 ```bash
-DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+# Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
+# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
+DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 psql $DB_URL -f sql/migrations/08e-phase2-productivity.sql
 ```
 
@@ -1623,7 +1711,10 @@ GRANT EXECUTE ON FUNCTION public.subscribe_premium_with_points() TO authenticate
 - [ ] **Step 2: Run and verify permissions**
 
 ```bash
-DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+# Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
+# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
+DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 psql $DB_URL -f sql/migrations/08f-phase2-billing.sql
 ```
 
@@ -1864,7 +1955,10 @@ GRANT EXECUTE ON FUNCTION public.complete_payment(text, text) TO service_role;
 - [ ] **Step 3: Run migration**
 
 ```bash
-DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+# Dùng migrate.sh thay vì psql trực tiếp (xem Task 0)
+# psql local:  PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d postgres -f <file>
+# docker exec: docker exec money-app-db-1 psql -U postgres -d postgres < <file>
+DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 psql $DB_URL -f sql/migrations/09-extend-complete-payment.sql
 ```
 

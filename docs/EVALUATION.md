@@ -99,7 +99,7 @@
 npx supabase start
 
 # 2. Chạy migrations theo thứ tự
-DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+DB_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 psql $DB_URL -f docs/requirement/schema.sql
 psql $DB_URL -f sql/triggers/01-signup-bonus.sql
 psql $DB_URL -f sql/triggers/02-profile-complete.sql
@@ -108,6 +108,10 @@ psql $DB_URL -f sql/triggers/04-login-streak.sql
 psql $DB_URL -f sql/storage/05-storage-policies.sql
 psql $DB_URL -f sql/migrations/06-payments-table.sql
 psql $DB_URL -f sql/migrations/07-complete-payment-rpc.sql
+
+# Hoặc chạy tất cả một lệnh:
+./scripts/migrate.sh             # psql local
+./scripts/migrate.sh --docker    # qua docker exec
 
 # 3. .env.local
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
