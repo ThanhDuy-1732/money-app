@@ -52,7 +52,7 @@
 | Ghi chú | ✅ Done | Pin/unpin; CRUD; `/notes`; Free tier: tối đa 50 |
 | To-do | ✅ Done | Done/undone; due date; `/todos`; Free tier: tối đa 20 đang hoạt động |
 | Premium subscription | ✅ Done | 2 cách: dùng 500 điểm (RPC) + VNPay 19.000đ (webhook); `/billing/upgrade` |
-| Free tier limits | ✅ Done | Giới hạn enforced tại Server Action qua `checkFreeLimit()`; không qua RLS |
+| Free tier limits | ✅ Done | Budgets: enforce trong DB RPC (`upsert_budget_with_limit()`); Savings/Notes/Todos: enforce tại Server Action qua `checkFreeLimit()` |
 | Nâng cấp qua VNPay | ✅ Done | `complete_payment()` mở rộng — phân nhánh `topup` / `subscription` |
 
 ---
@@ -156,6 +156,7 @@ src/
     /feed                         — Feed có infinite scroll + WelcomeBanner
     /explore                      — Feed công khai (không cần login)
     /wallet, /wallet/topup        — Ví & nạp điểm VNPay
+    /wallet/topup/return          — Trang return VNPay sau thanh toán
     /profile                      — Hồ sơ người dùng
     /notifications                — Thông báo
     /u/[username]                 — Public profile
@@ -233,4 +234,4 @@ scripts/
 - 500 điểm (instant via `subscribe_premium_with_points()` RPC)
 - 19.000đ VNPay (webhook → `complete_payment()` subscription branch)
 
-> Giới hạn được enforce tại **Server Action layer** qua `checkFreeLimit()`, không phải RLS.
+> Giới hạn: Budgets enforce trong DB RPC với advisory lock; Savings/Notes/Todos enforce tại Server Action qua `checkFreeLimit()`. Không có gì enforce qua RLS.
