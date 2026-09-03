@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getSubscriptionStatus, subscribeWithPoints } from '@/features/billing/subscription.actions'
 import { PREMIUM_POINTS_COST } from '@/lib/constants/limits'
 
-export default async function UpgradePage() {
+export default async function UpgradePage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -16,15 +16,27 @@ export default async function UpgradePage() {
 
   const canAfford = (profile?.points_balance ?? 0) >= PREMIUM_POINTS_COST
 
+  const params = await searchParams
+  const error = params.error
+
   async function handleSubscribeWithPoints() {
     'use server'
     const result = await subscribeWithPoints()
-    if (!result.error) redirect('/billing/upgrade')
+    if (result.error) {
+      redirect(`/billing/upgrade?error=${encodeURIComponent(result.error)}`)
+    }
+    redirect('/billing/upgrade')
   }
 
   return (
     <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
       <h1 className="text-2xl font-bold">Nâng cấp Premium</h1>
+
+      {error && (
+        <div className="border border-red-200 bg-red-50 dark:bg-red-950 rounded-xl p-4">
+          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+        </div>
+      )}
 
       {isPremium ? (
         <div className="border border-green-200 bg-green-50 dark:bg-green-950 rounded-xl p-4">
@@ -52,6 +64,7 @@ export default async function UpgradePage() {
         </div>
 
         <form action={handleSubscribeWithPoints}>
+          <p className="text-sm text-gray-500">Số dư của bạn: {profile?.points_balance ?? 0} điểm</p>
           <button
             type="submit"
             disabled={!canAfford}

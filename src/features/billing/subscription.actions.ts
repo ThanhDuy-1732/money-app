@@ -25,8 +25,18 @@ export async function subscribeWithPoints() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
-  const { data, error } = await supabase.rpc('subscribe_premium_with_points')
+  const { error } = await supabase.rpc('subscribe_premium_with_points')
   if (error) return { error: error.message } // Includes "balance insufficient" from points_ledger check
   revalidatePath('/billing/upgrade')
   return { error: null }
+}
+
+export function checkFreeLimit(
+  feature: keyof typeof FREE_LIMITS,
+  currentCount: number
+): { allowed: boolean; error?: string } {
+  if (currentCount >= FREE_LIMITS[feature]) {
+    return { allowed: false, error: `Đã đạt giới hạn ${FREE_LIMITS[feature]} cho gói Free` }
+  }
+  return { allowed: true }
 }
