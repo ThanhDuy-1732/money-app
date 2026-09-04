@@ -60,6 +60,7 @@ run_sql "sql/migrations/08e-phase2-productivity.sql"
 run_sql "sql/migrations/08f-phase2-billing.sql"
 run_sql "sql/migrations/09-extend-complete-payment.sql"
 run_sql "sql/migrations/09b-budget-upsert-rpc.sql"
+run_sql "sql/migrations/10-phase3-admin-referral.sql"
 
 echo ""
 echo "✅ Migrations hoàn tất."
