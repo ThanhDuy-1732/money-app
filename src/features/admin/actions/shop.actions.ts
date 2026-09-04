@@ -81,25 +81,16 @@ export async function bulkImportCodes(
 ): Promise<{ imported: number; error: string | null }> {
   try {
     const supabase = await requireAdmin()
-    const rows = codesText
-      .split('\n')
-      .map((c) => c.trim())
-      .filter(Boolean)
-      .map((code) => ({ product_id: productId, code }))
+    const codes = codesText.split('\n').map(c => c.trim()).filter(Boolean)
+    if (codes.length === 0) return { imported: 0, error: null }
 
-    if (rows.length === 0) return { imported: 0, error: null }
-
-    // ignore conflicts — duplicate codes already in DB stay as-is
-    // ponytail: no batching; Supabase REST limit ~1000 rows, add batching if needed
-    const { data, error } = await (supabase as any)
-      .from('shop_product_codes')
-      .upsert(rows, { onConflict: 'product_id,code', ignoreDuplicates: true })
-      .select('id')
-
+    const { data, error } = await (supabase as any).rpc('admin_import_codes', {
+      p_product_id: productId,
+      p_codes: codes,
+    })
     if (error) return { imported: 0, error: error.message }
     revalidatePath('/admin/shop')
-    // data?.length is the actual inserted count (duplicates excluded)
-    return { imported: data?.length ?? 0, error: null }
+    return { imported: data ?? 0, error: null }
   } catch (e: any) {
     return { imported: 0, error: e.message ?? 'Unknown error' }
   }

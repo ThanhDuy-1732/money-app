@@ -31,11 +31,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Admin route guard — second check after auth
-  if (user && pathname.startsWith('/admin')) {
+  // Profile checks: locked enforcement + admin route guard
+  if (user) {
     const { data: profile } = await supabase
-      .from('profiles').select('role').eq('id', user.id).single()
-    if (profile?.role !== 'admin') {
+      .from('profiles').select('role, locked').eq('id', user.id).single()
+
+    if (profile?.locked) {
+      await supabase.auth.signOut()
+      return NextResponse.redirect(new URL('/login?reason=locked', request.url))
+    }
+
+    if (pathname.startsWith('/admin') && profile?.role !== 'admin') {
       return NextResponse.redirect(new URL('/feed', request.url))
     }
   }

@@ -74,6 +74,7 @@ export async function fetchFeedPage(
     .from('posts')
     .select(baseSelect)
     .is('deleted_at', null)
+    .eq('hidden', false)
     .order('created_at', { ascending: false })
     .limit(FEED_PAGE_SIZE)
 

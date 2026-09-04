@@ -39,12 +39,13 @@ export async function verifyOtp(email: string, token: string) {
       // Look up referrer and create pending referral record
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: referrerId } = await (supabase.rpc as any)('get_referrer_by_code', { p_code: refCode })
-      if (referrerId && referrerId !== data.user.id) {
-        await supabase.from('referrals').insert({
-          referrer_id: referrerId,
-          referred_id: data.user.id,
-          status: 'pending',
+      if (referrerId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: refErr } = await (supabase as any).rpc('create_referral', {
+          p_referrer_id: referrerId,
+          p_referred_id: data.user.id,
         })
+        if (refErr) console.error('[referral] create_referral failed:', refErr.message)
       }
       cookieStore.delete('ref_code')
     }
