@@ -23,16 +23,18 @@ export async function listUsers(limit = 100) {
 
 export async function lockUser(userId: string): Promise<void> {
   const supabase = await requireAdmin()
-  const { data: target } = await supabase.from('profiles').select('role').eq('id', userId).single()
-  if (target?.role === 'admin') throw new Error('Cannot lock admin users')
+  const { data: target, error } = await supabase.from('profiles').select('role').eq('id', userId).single()
+  if (error || !target) throw new Error('User not found')
+  if (target.role === 'admin') throw new Error('Cannot lock admin users')
   await supabase.from('profiles').update({ locked: true }).eq('id', userId)
   revalidatePath('/admin/users')
 }
 
 export async function unlockUser(userId: string): Promise<void> {
   const supabase = await requireAdmin()
-  const { data: target } = await supabase.from('profiles').select('role').eq('id', userId).single()
-  if (target?.role === 'admin') throw new Error('Cannot unlock admin users')
+  const { data: target, error } = await supabase.from('profiles').select('role').eq('id', userId).single()
+  if (error || !target) throw new Error('User not found')
+  if (target.role === 'admin') throw new Error('Cannot unlock admin users')
   await supabase.from('profiles').update({ locked: false }).eq('id', userId)
   revalidatePath('/admin/users')
 }
