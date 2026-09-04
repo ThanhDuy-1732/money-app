@@ -65,6 +65,7 @@ run_sql "sql/migrations/11-phase3-shop-marketplace.sql"
 run_sql "sql/migrations/12-complete-payment-shop.sql"
 run_sql "sql/migrations/13-phase3-security-fixes.sql"
 run_sql "sql/migrations/14-parked-fixes.sql"
+run_sql "sql/migrations/15-search-indexes.sql"
 
 echo ""
 echo "✅ Migrations hoàn tất."
