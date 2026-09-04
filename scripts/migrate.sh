@@ -62,6 +62,7 @@ run_sql "sql/migrations/09-extend-complete-payment.sql"
 run_sql "sql/migrations/09b-budget-upsert-rpc.sql"
 run_sql "sql/migrations/10-phase3-admin-referral.sql"
 run_sql "sql/migrations/11-phase3-shop-marketplace.sql"
+run_sql "sql/migrations/12-complete-payment-shop.sql"
 
 echo ""
 echo "✅ Migrations hoàn tất."
