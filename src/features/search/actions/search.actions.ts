@@ -23,7 +23,7 @@ export async function searchContent(
 
   const supabase = await createClient()
 
-  const [{ data: rawPosts }, { data: rawUsers }] = await Promise.all([
+  const [{ data: rawPosts }, { data: byName }, { data: byUser }] = await Promise.all([
     supabase
       .from('posts')
       .select('id, content, created_at, profiles(display_name, avatar_url)')
@@ -32,17 +32,19 @@ export async function searchContent(
       .textSearch('content', q, { type: 'websearch', config: 'simple' })
       .order('created_at', { ascending: false })
       .limit(20),
-    supabase
-      .from('profiles')
-      .select('id, display_name, username, avatar_url')
-      .or(
-        `display_name.ilike.%${q}%,username.ilike.%${q}%`
-      )
-      .limit(10),
+    supabase.from('profiles').select('id, display_name, username, avatar_url')
+      .ilike('display_name', `%${q}%`).limit(10),
+    supabase.from('profiles').select('id, display_name, username, avatar_url')
+      .ilike('username', `%${q}%`).limit(10),
   ])
+
+  const seen = new Set<string>()
+  const rawUsers = [...(byName ?? []), ...(byUser ?? [])].filter(
+    u => seen.has(u.id) ? false : !!seen.add(u.id)
+  )
 
   return {
     posts: (rawPosts ?? []) as SearchPost[],
-    users: (rawUsers ?? []) as SearchUser[],
+    users: rawUsers as SearchUser[],
   }
 }
