@@ -43,7 +43,7 @@ BEGIN
     -- product_id stored in payments.metadata when creating the VNPay link
     v_product_id := (v_payment.metadata->>'product_id')::uuid;
     IF v_product_id IS NULL THEN
-      RAISE EXCEPTION 'shop_purchase missing product_id in metadata';
+      RETURN json_build_object('ok', false, 'error', 'shop_purchase missing product_id in metadata');
     END IF;
 
     SELECT id INTO v_code_id
