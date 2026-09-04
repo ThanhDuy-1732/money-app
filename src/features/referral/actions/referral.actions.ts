@@ -1,14 +1,15 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
-import crypto from 'crypto'
 
 export async function getOrCreateReferralCode(): Promise<{ code: string | null; error: string | null }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { code: null, error: 'Chưa đăng nhập' }
 
-  const code = crypto.createHash('sha256').update(user.id).digest('hex').slice(0, 8)
-  return { code, error: null }
+  const { data: profile } = await supabase
+    .from('profiles').select('referral_code').eq('id', user.id).single()
+  // referral_code is set by DB trigger on insert — should always exist after migration 10 backfill
+  return { code: profile?.referral_code ?? null, error: null }
 }
 
 export async function getReferralStats() {

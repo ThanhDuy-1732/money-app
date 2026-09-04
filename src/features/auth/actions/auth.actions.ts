@@ -26,9 +26,30 @@ export async function verifyOtp(email: string, token: string) {
   const supabase = await createClient()
   const { data, error } = await supabase.auth.verifyOtp({ email, token: parsed.data.otp, type: 'email' })
   if (error) return { error: error.message }
-  // Show welcome bonus banner for brand-new signups (account < 10 s old)
+
   const isNew = data.user?.created_at &&
     Date.now() - new Date(data.user.created_at).getTime() < 10_000
+
+  if (isNew && data.user) {
+    // Process referral if user arrived via /join?ref=CODE
+    const { cookies } = await import('next/headers')
+    const cookieStore = await cookies()
+    const refCode = cookieStore.get('ref_code')?.value
+    if (refCode) {
+      // Look up referrer and create pending referral record
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: referrerId } = await (supabase.rpc as any)('get_referrer_by_code', { p_code: refCode })
+      if (referrerId && referrerId !== data.user.id) {
+        await supabase.from('referrals').insert({
+          referrer_id: referrerId,
+          referred_id: data.user.id,
+          status: 'pending',
+        })
+      }
+      cookieStore.delete('ref_code')
+    }
+  }
+
   redirect(isNew ? '/feed?welcome=1' : '/feed')
 }
 
