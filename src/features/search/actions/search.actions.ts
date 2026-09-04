@@ -22,6 +22,8 @@ export async function searchContent(
   if (!q) return { posts: [], users: [] }
 
   const supabase = await createClient()
+  // Escape LIKE metacharacters so literal % and _ in queries don't act as wildcards
+  const likeQ = q.replace(/[%_\\]/g, '\\$&')
 
   const [{ data: rawPosts }, { data: byName }, { data: byUser }] = await Promise.all([
     supabase
@@ -33,9 +35,9 @@ export async function searchContent(
       .order('created_at', { ascending: false })
       .limit(20),
     supabase.from('profiles').select('id, display_name, username, avatar_url')
-      .ilike('display_name', `%${q}%`).limit(10),
+      .ilike('display_name', `%${likeQ}%`).limit(10),
     supabase.from('profiles').select('id, display_name, username, avatar_url')
-      .ilike('username', `%${q}%`).limit(10),
+      .ilike('username', `%${likeQ}%`).limit(10),
   ])
 
   const seen = new Set<string>()
