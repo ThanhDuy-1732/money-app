@@ -374,6 +374,7 @@ export type Database = {
           content: string | null
           created_at: string
           deleted_at: string | null
+          hidden: boolean
           id: string
           image_urls: Json
           like_count: number
@@ -384,6 +385,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           deleted_at?: string | null
+          hidden?: boolean
           id?: string
           image_urls?: Json
           like_count?: number
@@ -394,6 +396,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           deleted_at?: string | null
+          hidden?: boolean
           id?: string
           image_urls?: Json
           like_count?: number
@@ -417,10 +420,13 @@ export type Database = {
           display_name: string
           id: string
           last_login_date: string | null
+          locked: boolean
           points_balance: number
+          role: string
           status: string
           streak_count: number
           updated_at: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -429,10 +435,13 @@ export type Database = {
           display_name: string
           id: string
           last_login_date?: string | null
+          locked?: boolean
           points_balance?: number
+          role?: string
           status?: string
           streak_count?: number
           updated_at?: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -441,10 +450,13 @@ export type Database = {
           display_name?: string
           id?: string
           last_login_date?: string | null
+          locked?: boolean
           points_balance?: number
+          role?: string
           status?: string
           streak_count?: number
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
