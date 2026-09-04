@@ -23,15 +23,19 @@ export async function upsertPartner(data: {
   name: string
   logo_url: string
   active: boolean
-}) {
-  const supabase = await requireAdmin()
-  const { id, ...rest } = data
-  if (id) {
-    await (supabase as any).from('shop_partners').update(rest).eq('id', id)
-  } else {
-    await (supabase as any).from('shop_partners').insert(rest)
+}): Promise<{ error: string | null }> {
+  try {
+    const supabase = await requireAdmin()
+    const { id, ...rest } = data
+    const { error } = id
+      ? await (supabase as any).from('shop_partners').update(rest).eq('id', id)
+      : await (supabase as any).from('shop_partners').insert(rest)
+    if (error) return { error: error.message }
+    revalidatePath('/admin/shop')
+    return { error: null }
+  } catch (e: any) {
+    return { error: e.message ?? 'Unknown error' }
   }
-  revalidatePath('/admin/shop')
 }
 
 export async function listProducts() {
@@ -56,39 +60,49 @@ export async function upsertProduct(data: {
   price_points?: number | null
   price_vnd?: number | null
   active: boolean
-}) {
-  const supabase = await requireAdmin()
-  const { id, ...rest } = data
-  if (id) {
-    await (supabase as any).from('shop_products').update(rest).eq('id', id)
-  } else {
-    await (supabase as any).from('shop_products').insert(rest)
+}): Promise<{ error: string | null }> {
+  try {
+    const supabase = await requireAdmin()
+    const { id, ...rest } = data
+    const { error } = id
+      ? await (supabase as any).from('shop_products').update(rest).eq('id', id)
+      : await (supabase as any).from('shop_products').insert(rest)
+    if (error) return { error: error.message }
+    revalidatePath('/admin/shop')
+    return { error: null }
+  } catch (e: any) {
+    return { error: e.message ?? 'Unknown error' }
   }
-  revalidatePath('/admin/shop')
 }
 
 export async function bulkImportCodes(
   productId: string,
   codesText: string
-): Promise<{ imported: number }> {
-  const supabase = await requireAdmin()
-  const rows = codesText
-    .split('\n')
-    .map((c) => c.trim())
-    .filter(Boolean)
-    .map((code) => ({ product_id: productId, code }))
+): Promise<{ imported: number; error: string | null }> {
+  try {
+    const supabase = await requireAdmin()
+    const rows = codesText
+      .split('\n')
+      .map((c) => c.trim())
+      .filter(Boolean)
+      .map((code) => ({ product_id: productId, code }))
 
-  if (rows.length === 0) return { imported: 0 }
+    if (rows.length === 0) return { imported: 0, error: null }
 
-  // ignore conflicts — duplicate codes already in DB stay as-is
-  // ponytail: no batching; Supabase REST limit ~1000 rows, add batching if needed
-  const { data } = await (supabase as any)
-    .from('shop_product_codes')
-    .upsert(rows, { onConflict: 'product_id,code', ignoreDuplicates: true })
-    .select('id')
+    // ignore conflicts — duplicate codes already in DB stay as-is
+    // ponytail: no batching; Supabase REST limit ~1000 rows, add batching if needed
+    const { data, error } = await (supabase as any)
+      .from('shop_product_codes')
+      .upsert(rows, { onConflict: 'product_id,code', ignoreDuplicates: true })
+      .select('id')
 
-  revalidatePath('/admin/shop')
-  return { imported: (data as any[])?.length ?? rows.length }
+    if (error) return { imported: 0, error: error.message }
+    revalidatePath('/admin/shop')
+    // data?.length is the actual inserted count (duplicates excluded)
+    return { imported: data?.length ?? 0, error: null }
+  } catch (e: any) {
+    return { imported: 0, error: e.message ?? 'Unknown error' }
+  }
 }
 
 export async function listOrders() {

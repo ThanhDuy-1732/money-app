@@ -18,8 +18,8 @@ export default async function AdminShopPage({
     const name = (formData.get('name') as string)?.trim()
     const logo_url = (formData.get('logo_url') as string)?.trim() ?? ''
     const active = formData.get('active') === 'on'
-    await upsertPartner({ name, logo_url, active })
-    redirect('/admin/shop?msg=Partner+saved')
+    const { error } = await upsertPartner({ name, logo_url, active })
+    redirect(error ? `/admin/shop?err=${encodeURIComponent(error)}` : '/admin/shop?msg=Partner+saved')
   }
 
   async function handleUpsertProduct(formData: FormData) {
@@ -33,16 +33,16 @@ export default async function AdminShopPage({
     const price_points = pp ? parseInt(pp) : null
     const price_vnd = pv ? parseInt(pv) : null
     const active = formData.get('active') === 'on'
-    await upsertProduct({ partner_id, title, description, image_url, price_points, price_vnd, active })
-    redirect('/admin/shop?msg=Product+saved')
+    const { error } = await upsertProduct({ partner_id, title, description, image_url, price_points, price_vnd, active })
+    redirect(error ? `/admin/shop?err=${encodeURIComponent(error)}` : '/admin/shop?msg=Product+saved')
   }
 
   async function handleBulkImport(formData: FormData) {
     'use server'
     const productId = formData.get('product_id') as string
     const codesText = formData.get('codes') as string
-    const { imported } = await bulkImportCodes(productId, codesText)
-    redirect(`/admin/shop?msg=${imported}+codes+imported`)
+    const { imported, error } = await bulkImportCodes(productId, codesText)
+    redirect(error ? `/admin/shop?err=${encodeURIComponent(error)}` : `/admin/shop?msg=${imported}+codes+imported`)
   }
 
   return (
