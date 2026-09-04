@@ -296,6 +296,7 @@ export type Database = {
           gateway: string
           gateway_txn_id: string | null
           id: string
+          metadata: Json | null
           payment_type: string
           status: string
           user_id: string
@@ -306,6 +307,7 @@ export type Database = {
           gateway: string
           gateway_txn_id?: string | null
           id?: string
+          metadata?: Json | null
           payment_type?: string
           status?: string
           user_id: string
@@ -316,6 +318,7 @@ export type Database = {
           gateway?: string
           gateway_txn_id?: string | null
           id?: string
+          metadata?: Json | null
           payment_type?: string
           status?: string
           user_id?: string
@@ -422,6 +425,7 @@ export type Database = {
           last_login_date: string | null
           locked: boolean
           points_balance: number
+          referral_code: string
           role: string
           status: string
           streak_count: number
@@ -437,6 +441,7 @@ export type Database = {
           last_login_date?: string | null
           locked?: boolean
           points_balance?: number
+          referral_code?: string
           role?: string
           status?: string
           streak_count?: number
@@ -452,6 +457,7 @@ export type Database = {
           last_login_date?: string | null
           locked?: boolean
           points_balance?: number
+          referral_code?: string
           role?: string
           status?: string
           streak_count?: number
@@ -739,6 +745,123 @@ export type Database = {
           },
         ]
       }
+      shop_orders: {
+        Row: {
+          amount_points: number | null
+          amount_vnd: number | null
+          code_id: string
+          created_at: string
+          id: string
+          payment_method: string
+          product_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount_points?: number | null
+          amount_vnd?: number | null
+          code_id: string
+          created_at?: string
+          id?: string
+          payment_method: string
+          product_id: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          amount_points?: number | null
+          amount_vnd?: number | null
+          code_id?: string
+          created_at?: string
+          id?: string
+          payment_method?: string
+          product_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      shop_partners: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          logo_url: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          logo_url: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          logo_url?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      shop_product_codes: {
+        Row: {
+          assigned_order_id: string | null
+          code: string
+          id: string
+          product_id: string
+        }
+        Insert: {
+          assigned_order_id?: string | null
+          code: string
+          id?: string
+          product_id: string
+        }
+        Update: {
+          assigned_order_id?: string | null
+          code?: string
+          id?: string
+          product_id?: string
+        }
+        Relationships: []
+      }
+      shop_products: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string
+          id: string
+          image_url: string
+          partner_id: string
+          price_points: number | null
+          price_vnd: number | null
+          title: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description: string
+          id?: string
+          image_url: string
+          partner_id: string
+          price_points?: number | null
+          price_vnd?: number | null
+          title: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string
+          partner_id?: string
+          price_points?: number | null
+          price_vnd?: number | null
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -758,6 +881,10 @@ export type Database = {
         Returns: Json
       }
       complete_referral: { Args: { p_referred_id: string }; Returns: undefined }
+      get_my_order_code: { Args: { p_order_id: string }; Returns: string }
+      get_referrer_by_code: { Args: { p_code: string }; Returns: string | null }
+      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean }
+      purchase_product_with_points: { Args: { p_product_id: string }; Returns: string }
       redeem_reward: { Args: { p_reward_id: string }; Returns: string }
       subscribe_premium_with_points: { Args: never; Returns: string }
     }

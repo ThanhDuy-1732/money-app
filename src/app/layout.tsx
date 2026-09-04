@@ -19,6 +19,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { data: { user } } = await supabase.auth.getUser()
   if (user) await recordLogin()
 
+  let isAdmin = false
+  if (user) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    isAdmin = profile?.role === 'admin'
+  }
+
   return (
     <html lang="vi">
       <body className={inter.className}>
@@ -34,9 +40,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/notes">📝 Ghi chú</Link>
                 <Link href="/todos">✅ To-do</Link>
                 <Link href="/billing/upgrade">⭐ Premium</Link>
+                <Link href="/shop">🛍️ Shop</Link>
                 <Link href="/invite">Mời bạn</Link>
                 <Link href="/notifications">🔔</Link>
                 <Link href="/profile">Hồ sơ</Link>
+                {isAdmin && <Link href="/admin" className="text-red-600 font-medium">Admin</Link>}
                 <form action={signOut}><button type="submit" className="text-gray-400 hover:text-gray-600">Đăng xuất</button></form>
               </div>
             </nav>
