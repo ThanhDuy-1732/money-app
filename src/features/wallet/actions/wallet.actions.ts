@@ -12,3 +12,15 @@ export async function redeemReward(rewardId: string): Promise<{ error: string | 
   revalidatePath('/redeem')
   return { error: null }
 }
+
+export async function getBalance(): Promise<number> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return 0
+  const { data } = await supabase
+    .from('profiles')
+    .select('points_balance')
+    .eq('id', user.id)
+    .single()
+  return data?.points_balance ?? 0
+}
