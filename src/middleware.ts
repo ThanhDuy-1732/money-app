@@ -1,3 +1,4 @@
+// src/middleware.ts
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
@@ -21,12 +22,24 @@ export async function middleware(request: NextRequest) {
   )
   const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
+
   const isPublic = pathname === '/'
-    || ['/register', '/login', '/explore'].some(r => pathname.startsWith(r))
-    || /^\/u\/[^/]+$/.test(pathname)   // exactly /u/<username>, not /u/<x>/anything
+    || ['/register', '/login', '/explore', '/join', '/shop'].some(r => pathname.startsWith(r))
+    || /^\/u\/[^/]+$/.test(pathname)
+
   if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
+
+  // Admin route guard — second check after auth
+  if (user && pathname.startsWith('/admin')) {
+    const { data: profile } = await supabase
+      .from('profiles').select('role').eq('id', user.id).single()
+    if (profile?.role !== 'admin') {
+      return NextResponse.redirect(new URL('/feed', request.url))
+    }
+  }
+
   return supabaseResponse
 }
 
