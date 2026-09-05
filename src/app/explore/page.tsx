@@ -1,6 +1,7 @@
 import { FeedList } from '@/features/feed/components/FeedList'
 import { createClient } from '@/lib/supabase/server'
 import { searchContent } from '@/features/search/actions/search.actions'
+import { SearchInput } from '@/features/search/components/SearchInput'
 import Link from 'next/link'
 
 export default async function ExplorePage({
@@ -21,15 +22,10 @@ export default async function ExplorePage({
     <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
       <h1 className="text-xl font-bold">Khám phá</h1>
 
-      {/* Search form — GET, no JS required */}
+      {/* Search form — GET, no JS required; autocomplete via SearchInput */}
       <form action="/explore" method="GET">
         <div className="flex gap-2">
-          <input
-            name="q"
-            defaultValue={q}
-            placeholder="Tìm bài viết, người dùng..."
-            className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <SearchInput defaultValue={q} />
           <button
             type="submit"
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg"

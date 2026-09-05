@@ -887,6 +887,10 @@ export type Database = {
       purchase_product_with_points: { Args: { p_product_id: string }; Returns: string }
       redeem_reward: { Args: { p_reward_id: string }; Returns: string }
       subscribe_premium_with_points: { Args: never; Returns: string }
+      autocomplete_posts: {
+        Args: { p_query: string; p_limit?: number }
+        Returns: Array<{ content: string }>
+      }
     }
     Enums: {
       [_ in never]: never

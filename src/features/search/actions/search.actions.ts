@@ -51,3 +51,19 @@ export async function searchContent(
     users: rawUsers as SearchUser[],
   }
 }
+
+/**
+ * Returns up to 5 post content snippets that fuzzily match the partial query.
+ * Uses pg_trgm similarity — handles missing diacritics and partial words.
+ * Requires migration 17 (pg_trgm + immutable_unaccent indexes).
+ */
+export async function autocompleteSearch(partial: string): Promise<string[]> {
+  const p = partial.trim()
+  if (p.length < 2) return []
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('autocomplete_posts', { p_query: p, p_limit: 5 })
+  if (error || !data) return []
+  return (data as Array<{ content: string }>).map(r =>
+    r.content.length > 60 ? r.content.slice(0, 60) + '…' : r.content
+  )
+}
