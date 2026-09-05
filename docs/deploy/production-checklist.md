@@ -121,15 +121,132 @@ This checklist walks through Steps 1–5 of the production deployment. Work thro
 
 ---
 
+---
+
+## Step 6: Verify Mock Route Disabled in Production
+
+- [ ] Review the mock VNPay route guard:
+  - [ ] Open `src/app/mock/vnpay/page.tsx`
+  - [ ] Confirm line 39 contains: `if (process.env.NODE_ENV === 'production') notFound()`
+  - [ ] This disables the mock route when deployed to production
+- [ ] **Important:** Since `NODE_ENV` is always `'production'` on Vercel, the mock route is automatically disabled
+- [ ] **Verify:** Visit `https://<preview-url>.vercel.app/mock/vnpay` and confirm it returns a 404 error
+- [ ] ✅ Mock route is disabled in production
+
+---
+
+## Step 7: Enable Point-in-Time Recovery (PITR)
+
+- [ ] Log into Supabase Cloud Dashboard
+- [ ] Go to **Settings** → **Billing** → **Plan**
+- [ ] Click **Upgrade to Pro** (required for PITR)
+- [ ] Wait for upgrade to complete (usually instantaneous)
+- [ ] Go to **Settings** → **Database** → **Backups**
+- [ ] Find **Point-in-Time Recovery (PITR)** section
+- [ ] Enable PITR with retention period of at least **7 days** (recommended: 30 days)
+- [ ] Click **Save**
+- [ ] **Verify:**
+  - [ ] PITR is listed as **Enabled** in the Backups section
+  - [ ] Retention period shows the configured number of days
+- [ ] ✅ PITR enabled — database can be recovered to any point within 7+ days
+
+---
+
+## Step 8: Set Up Error Monitoring
+
+**Option A: Sentry (Recommended for production)**
+
+- [ ] Install Sentry Next.js integration:
+  ```bash
+  npm install @sentry/nextjs
+  npx @sentry/wizard@latest -i nextjs
+  ```
+- [ ] Follow the wizard to create a Sentry project (or log in to existing one)
+- [ ] Copy the DSN from Sentry dashboard
+- [ ] In Vercel Dashboard → Project Settings → **Environment Variables**, add:
+  - [ ] Name: `SENTRY_AUTH_TOKEN`, Value: `<token-from-sentry>`
+  - [ ] Name: `NEXT_PUBLIC_SENTRY_DSN`, Value: `<dsn-from-sentry>`
+- [ ] Deploy to Vercel
+- [ ] **Verify:** Trigger a test error in production to confirm Sentry receives it
+  - [ ] Visit a non-existent page like `/test-error` to trigger a 404
+  - [ ] Check Sentry dashboard → Issues to confirm error was captured
+
+**Option B: Skip for MVP (defer to later phase)**
+
+- [ ] Add a TODO entry to `docs/EVALUATION.md` under **Technical Debt**:
+  ```markdown
+  - [ ] Phase 6: Implement error monitoring (Sentry or alternative)
+  ```
+- [ ] Commit this change
+- [ ] Proceed to Step 9
+
+**Choose Option A or Option B above:**
+
+- [ ] ✅ Error monitoring configured (or deferred with TODO added)
+
+---
+
+## Step 9: Run E2E Tests Against Staging + Smoke Tests
+
+**Part 1: Run full E2E suite against staging (preview URL)**
+
+- [ ] Get the Vercel preview URL from Step 4 (e.g., `https://money-app-abc123.vercel.app`)
+- [ ] Run Playwright tests against the staging environment:
+  ```bash
+  PLAYWRIGHT_BASE_URL=https://<preview-url>.vercel.app npx playwright test
+  ```
+  - Or update `playwright.config.ts` temporarily:
+    ```typescript
+    use: { baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000' }
+    ```
+- [ ] Expected results:
+  - [ ] Auth tests PASS (signup, OTP, login)
+  - [ ] Referral tests PASS
+  - [ ] Search tests PASS
+  - [ ] Wallet test: May fail if VNPay production not configured — skip or test separately
+- [ ] **Verify:** All critical E2E tests pass on staging
+
+**Part 2: Smoke test — critical user flows**
+
+- [ ] **Account Registration & Login:**
+  - [ ] Visit `https://<preview-url>.vercel.app/auth/signup`
+  - [ ] Register with a real email address
+  - [ ] Receive OTP email
+  - [ ] Enter OTP and log in successfully ✓
+  - [ ] Profile page loads and shows username ✓
+
+- [ ] **Wallet Balance:**
+  - [ ] Navigate to `/wallet`
+  - [ ] Wallet balance displays (even if 0) ✓
+  - [ ] No console errors ✓
+
+- [ ] **Feed/Explore:**
+  - [ ] Navigate to `/explore`
+  - [ ] Feed loads and displays posts ✓
+  - [ ] Search works (type in search box) ✓
+
+- [ ] **Mock VNPay Disabled:**
+  - [ ] Visit `/mock/vnpay`
+  - [ ] Returns 404 (Not Found) ✓
+  - [ ] Mock interface is NOT accessible ✓
+
+- [ ] ✅ All E2E tests pass, all smoke tests pass
+
+---
+
 ## Summary: All Steps Complete
 
-Once all 5 steps are verified, you have:
+Once all 9 steps are verified, you have:
 - ✅ Production Supabase database with all migrations
 - ✅ Edge Function deployed with VNPay secrets
 - ✅ Frontend deployed to Vercel
 - ✅ Auth redirect URLs configured
+- ✅ Mock route disabled in production
+- ✅ Point-in-Time Recovery enabled
+- ✅ Error monitoring configured (or deferred)
+- ✅ E2E and smoke tests passing on staging
 
-**Next:** Step 6 (Task 6) will point your production domain to Vercel. For now, the app is live at the Vercel preview URL.
+**Next:** Step 10 (go-live) will point your production domain to Vercel and update Supabase Auth settings.
 
 ---
 
