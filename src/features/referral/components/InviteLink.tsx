@@ -16,7 +16,7 @@ export function InviteLink({ code }: { code: string }) {
     <div className="space-y-2">
       <p className="text-sm font-medium">Link mời của bạn:</p>
       <div className="flex gap-2">
-        <code className="flex-1 text-xs bg-gray-100 rounded px-3 py-2 break-all">{link}</code>
+        <code className="flex-1 text-xs bg-gray-100 rounded px-3 py-2 break-all" data-testid="referral-code">{code}</code>
         <Button size="sm" variant="outline" onClick={copy}>
           {copied ? '✓ Đã copy' : 'Copy'}
         </Button>
