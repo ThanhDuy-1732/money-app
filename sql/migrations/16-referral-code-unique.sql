@@ -32,7 +32,7 @@ begin
     v_code := lower(substr(md5(new.id::text || clock_timestamp()::text || v_tries::text), 1, 8));
     exit when not exists (select 1 from public.profiles where referral_code = v_code);
     if v_tries > 5 then
-      raise exception 'Không sinh được mã referral duy nhất sau 5 lần thử';
+      raise exception 'Không sinh được mã referral duy nhất sau 6 lần thử';
     end if;
   end loop;
   new.referral_code := v_code;
