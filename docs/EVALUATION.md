@@ -1,7 +1,7 @@
-# Money App — Đánh giá hệ thống (Phase 1 → 4)
+# Money App — Đánh giá hệ thống (Phase 1 → 5)
 
-> Ngày: 05-09-2026 · Framework: Next.js 16 + Supabase · Trạng thái: Local running  
-> Commit mới nhất: `84dbb07` — Phase 4 hoàn chỉnh
+> Ngày: 05-09-2026 · Framework: Next.js 16 + Supabase · Trạng thái: Production-ready  
+> Commit mới nhất: Phase 5 hoàn chỉnh — Test suite + Production deploy + Analytics
 
 ## Stack kỹ thuật
 
@@ -79,6 +79,21 @@
 | Real-time wallet balance | ✅ Done | `RealtimeBalance` wraps `BalanceCard`; subscribe `user_id=eq.${userId}` channel |
 | Month picker | ✅ Done | `MonthPicker` — ← → navigation; next disabled; `router.push('/finance?month=...')` |
 
+### Phase 5 — Production-Ready: Test Suite, Deploy, Analytics
+
+| Tính năng | Trạng thái | Ghi chú |
+|---|---|---|
+| Unit tests (Vitest) | ✅ Done | 4 test files, 40 tests: `escape-like`, `vnpay-crypto`, `limits`, `auth.validators` |
+| E2E tests (Playwright) | ✅ Done | 6 spec files, 9 tests: auth (OTP/login), referral flow, search (LIKE metachar), wallet (VNPAY_MOCK), shop concurrency, admin access control |
+| Referral code unique constraint | ✅ Done | Migration 16: `referral_codes(code)` UNIQUE + backfill + trigger |
+| Advanced search with ranking | ✅ Done | Migration 17: `pg_trgm` extension + `immutable_unaccent()` wrapper + `ts_rank()` scoring |
+| Search autocomplete | ✅ Done | Migration 17: `/explore?q=...` suggests posts/users by relevance |
+| Premium analytics: trend chart | ✅ Done | Migration 18: `get_finance_trend()` RPC + `/finance/trends` chart (monthly income/expense) |
+| Referral analytics & leaderboard | ✅ Done | Migration 19: `get_referral_stats()` RPC + `/invite` leaderboard (top 10 referrers) |
+| Deploy production checklist | ✅ Done | Supabase Cloud setup; Vercel secrets; VNPay production credentials; Edge Function; mock route guard; PITR; Sentry; go-live |
+| Production migrations (16-19) | ✅ Ready | Apply via `./scripts/migrate.sh` to Supabase Cloud when deploying |
+| SECURITY DEFINER on all RPCs | ✅ Done | Migrations 16-19: `SECURITY DEFINER SET search_path = public` on `complete_referral_rpc`, `get_finance_trend`, `get_referral_stats` |
+
 ---
 
 ## Bảo mật đã xử lý
@@ -120,10 +135,8 @@
 
 | Mức | Vấn đề | File | Giải pháp |
 |---|---|---|---|
-| 🟡 | Referral code không unique ở DB | `referral.actions.ts` | SHA-256 OK cho MVP; cần unique DB column + ON CONFLICT nếu scale |
-| 🟡 | Không có test suite | — | Thêm Vitest + Playwright khi codebase ổn định |
 | 🟡 | `followingIds` tạo array mới mỗi `router.refresh()` khiến `NewPostsBanner` re-subscribe | `feed/page.tsx` | Acceptable ở scale hiện tại; fix = serialize thành string prop hoặc stable ref |
-| 🟡 | VNPay production chưa deploy | `.env.production` | `supabase secrets set VNPAY_HASH_SECRET=...`; Vercel + Supabase Cloud |
+| 🟡 | VNPay production credentials | Supabase Cloud | `supabase secrets set VNPAY_TMNCCODE=...` khi deploy production |
 
 ---
 
