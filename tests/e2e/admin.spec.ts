@@ -7,10 +7,10 @@ test.describe('admin access control', () => {
     await expect(page).not.toHaveURL('/admin')
   })
 
-  test('non-admin authenticated user cannot access /admin', async ({ page }) => {
-    // Without auth state, hitting /admin should redirect — sufficient to confirm
-    // the guard exists. Full authenticated-non-admin flow covered once fixtures
-    // (storageState) are added.
+  test.skip('non-admin authenticated user cannot access /admin', async ({ page }) => {
+    // Skipped: requires a Playwright storageState fixture with a logged-in non-admin
+    // user. Unauthenticated guard is already verified by the test above.
+    // TODO: add storageState fixture and assert redirect for authenticated non-admin.
     await page.goto('/admin')
     await expect(page).not.toHaveURL('/admin')
   })

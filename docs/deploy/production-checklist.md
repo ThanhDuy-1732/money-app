@@ -23,7 +23,7 @@ This checklist walks through Steps 1–5 of the production deployment. Work thro
 - [ ] Copy and save:
   - [ ] **Database password** (for migrations)
   - [ ] **Database host** (e.g., `xxx.supabase.co`)
-- [ ] Run all 16 migrations against the production database:
+- [ ] Run all migrations (16–19) against the production database:
   ```bash
   DB_HOST=<cloud-host> DB_PORT=5432 DB_USER=postgres DB_PASS=<cloud-password> DB_NAME=postgres \
     ./scripts/migrate.sh
@@ -56,10 +56,7 @@ This checklist walks through Steps 1–5 of the production deployment. Work thro
 
 ## Step 3: Deploy Edge Function
 
-- [ ] Ensure you are in the project directory:
-  ```bash
-  cd /Users/thankz/Code/money-app
-  ```
+- [ ] Ensure you are in the project root directory (where `package.json` lives)
 - [ ] Get your Supabase project reference (from dashboard URL or Settings → General):
   ```
   <project-ref> = the alphanumeric slug before .supabase.co
