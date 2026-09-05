@@ -12,18 +12,19 @@ export async function getOrCreateReferralCode(): Promise<{ code: string | null; 
   return { code: profile?.referral_code ?? null, error: null }
 }
 
-export async function getReferralStats() {
+export async function getReferralStats(): Promise<{
+  total: number
+  completed: number
+  pointsEarned: number
+}> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { total: 0, rewarded: 0 }
+  if (!user) return { total: 0, completed: 0, pointsEarned: 0 }
 
-  const { data } = await supabase
-    .from('referrals')
-    .select('status')
-    .eq('referrer_id', user.id)
-
-  return {
-    total: data?.length ?? 0,
-    rewarded: data?.filter(r => r.status === 'rewarded').length ?? 0,
-  }
+  // ponytail: uses get_referral_stats() RPC (migration 19) — reads referrals + points_ledger
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).rpc('get_referral_stats')
+  if (error || !data || !Array.isArray(data) || data.length === 0) return { total: 0, completed: 0, pointsEarned: 0 }
+  const row = data[0] as { total_invited: number; total_completed: number; points_earned: number }
+  return { total: row.total_invited, completed: row.total_completed, pointsEarned: row.points_earned }
 }
