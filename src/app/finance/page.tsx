@@ -33,9 +33,14 @@ export default async function FinancePage({
     <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
       <div className="flex items-center justify-between">
         <MonthPicker month={month} />
-        <Link href="/finance/new" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">
-          + Thêm giao dịch
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/finance/trends" className="px-3 py-2 border rounded-lg text-sm text-zinc-600">
+            📈 Xu hướng
+          </Link>
+          <Link href="/finance/new" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">
+            + Thêm giao dịch
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
