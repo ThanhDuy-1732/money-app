@@ -1,23 +1,21 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { autocompleteSearch } from '@/features/search/actions/search.actions'
 
 export function SearchInput({ defaultValue = '' }: { defaultValue?: string }) {
   const router = useRouter()
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [, startTransition] = useTransition()
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    clearTimeout(timer.current)
     const val = e.target.value
-    if (val.length >= 2) {
-      startTransition(async () => {
-        const results = await autocompleteSearch(val)
-        setSuggestions(results)
-      })
-    } else {
-      setSuggestions([])
-    }
+    if (val.length < 2) { setSuggestions([]); return }
+    timer.current = setTimeout(() =>
+      startTransition(async () => setSuggestions(await autocompleteSearch(val)))
+    , 150)
   }
 
   function handleSelect(suggestion: string) {
@@ -31,6 +29,7 @@ export function SearchInput({ defaultValue = '' }: { defaultValue?: string }) {
         name="q"
         defaultValue={defaultValue}
         onChange={handleChange}
+        onBlur={() => setTimeout(() => setSuggestions([]), 150)}
         placeholder="Tìm bài viết, người dùng..."
         className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         autoComplete="off"
