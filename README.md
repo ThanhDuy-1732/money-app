@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Money App
 
-## Getting Started
+Ứng dụng quản lý tài chính cá nhân + mạng xã hội. Xây dựng bằng Next.js 15 (App Router) + Supabase (Auth, PostgreSQL, Storage, Realtime).
 
-First, run the development server:
+## Yêu cầu
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — phải đang chạy
+- Node.js 18+ và npm
+
+## Khởi động (lần đầu)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+./scripts/dev.sh
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Script tự động làm tất cả:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Tạo `.env` từ `.env.example` (nếu chưa có)
+2. Cập nhật `.env.local` với đúng endpoint local
+3. Kéo Docker images và khởi động toàn bộ backend (DB, Auth, API, Storage, Studio)
+4. Chờ PostgreSQL healthy
+5. Chạy toàn bộ database migrations
+6. Khởi động Next.js dev server
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Sau khi lên:
 
-## Learn More
+| URL | Dịch vụ |
+|-----|---------|
+| http://localhost:3000 | Ứng dụng |
+| http://localhost:3001 | Supabase Studio (quản lý DB) |
+| http://localhost:9000 | Inbucket (xem OTP email) |
 
-To learn more about Next.js, take a look at the following resources:
+## Các lần chạy tiếp theo
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Database đã có data, bỏ qua migrations:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+./scripts/dev.sh --no-migrate
+```
 
-## Deploy on Vercel
+## Tắt backend
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+./scripts/dev.sh --down
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Data được lưu trong Docker volumes — không mất khi tắt.
+
+## Cấu hình môi trường
+
+### `.env` — Docker Compose (backend)
+
+Tạo tự động từ `.env.example`. Các giá trị mặc định hoạt động ngay cho local dev, không cần thay đổi.
+
+### `.env.local` — Next.js (frontend)
+
+Tạo tự động bởi script. Để override (ví dụ: thêm VNPay credentials thật):
+
+```bash
+# Thêm vào .env.local
+VNPAY_TMN_CODE=your_code
+VNPAY_HASH_SECRET=your_secret
+VNPAY_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+# Bỏ dòng VNPAY_MOCK=1
+```
+
+## Đăng nhập local
+
+Dùng Magic Link hoặc OTP qua email. Vì đây là môi trường local, email được bắt bởi Inbucket tại http://localhost:9000 — không cần email thật.
+
+## Database migrations
+
+Chạy thủ công nếu cần (ví dụ: sau khi thêm migration mới):
+
+```bash
+DB_PORT=5432 ./scripts/migrate.sh
+```
+
+## Stack kỹ thuật
+
+| Thành phần | Công nghệ |
+|---|---|
+| Frontend | Next.js 15 (App Router, Server Actions) |
+| Backend | Supabase (Auth, PostgreSQL, Storage, Realtime) |
+| Styling | Tailwind CSS |
+| Validation | Zod |
+| Payment | VNPay (mock gateway cho local — `VNPAY_MOCK=1`) |
+| Language | TypeScript |
