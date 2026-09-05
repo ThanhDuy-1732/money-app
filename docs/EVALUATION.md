@@ -83,7 +83,7 @@
 
 | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|
-| Unit tests (Vitest) | ✅ Done | 4 test files, 40 tests: `escape-like`, `vnpay-crypto`, `limits`, `auth.validators` |
+| Unit tests (Vitest) | ✅ Done | 5 test files, 40 tests: `escape-like`, `vnpay-crypto`, `limits`, `auth.validators`, `finance.validators` |
 | E2E tests (Playwright) | ✅ Done | 6 spec files, 9 tests: auth (OTP/login), referral flow, search (LIKE metachar), wallet (VNPAY_MOCK), shop concurrency, admin access control |
 | Referral code unique constraint | ✅ Done | Migration 16: `referral_codes(code)` UNIQUE + backfill + trigger |
 | Advanced search with ranking | ✅ Done | Migration 17: `pg_trgm` extension + `immutable_unaccent()` wrapper + `ts_rank()` scoring |
