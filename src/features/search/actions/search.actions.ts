@@ -1,5 +1,6 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
+import { escapeLike } from '@/lib/escape-like'
 
 export type SearchPost = {
   id: string
@@ -23,7 +24,7 @@ export async function searchContent(
 
   const supabase = await createClient()
   // Escape LIKE metacharacters so literal % and _ in queries don't act as wildcards
-  const likeQ = q.replace(/[%_\\]/g, '\\$&')
+  const likeQ = escapeLike(q)
 
   const [{ data: rawPosts }, { data: byName }, { data: byUser }] = await Promise.all([
     supabase

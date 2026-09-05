@@ -2,6 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
+import { vnpaySign, timingSafeCompare } from '@/lib/vnpay-crypto'
 
 // ponytail: sandbox URL — swap to https://pay.vnpay.vn/vpcpay.html for production
 const VNPAY_URL = process.env.VNPAY_URL ?? 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'
@@ -14,16 +15,6 @@ const MOCK_MODE = process.env.VNPAY_MOCK === '1' && !IS_PROD
 
 if (IS_PROD && (!VNPAY_TMN_CODE || !VNPAY_HASH_SECRET)) {
   throw new Error('[topup] VNPAY_TMN_CODE và VNPAY_HASH_SECRET phải được cấu hình trên production')
-}
-
-function vnpaySign(params: Record<string, string>, secret: string): string {
-  const sorted = Object.keys(params).sort().map(k => `${k}=${params[k]}`).join('&')
-  return crypto.createHmac('sha512', secret).update(Buffer.from(sorted, 'utf-8')).digest('hex')
-}
-
-function timingSafeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length) return false
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b))
 }
 
 export async function createVNPayOrder(
