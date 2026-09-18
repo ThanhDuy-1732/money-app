@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function listProducts(): Promise<any[]> {
   const supabase = await createClient()
+  // ponytail: shop tables need regenerated Supabase types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data } = await (supabase as any)
     .from('shop_products')
     .select('*, shop_partners(name, logo_url)')
@@ -16,6 +18,7 @@ export async function listProducts(): Promise<any[]> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getProduct(id: string): Promise<any> {
   const supabase = await createClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data } = await (supabase as any)
     .from('shop_products')
     .select('*, shop_partners(name, logo_url)')
@@ -51,6 +54,7 @@ export async function listMyOrders(): Promise<any[]> {
   } = await supabase.auth.getUser()
   if (!user) return []
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data } = await (supabase as any)
     .from('shop_orders')
     .select('*, shop_products(title, image_url, shop_partners(name))')

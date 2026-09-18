@@ -1,4 +1,5 @@
 'use server'
+/* eslint-disable @typescript-eslint/no-explicit-any -- shop tables need regenerated Supabase types */
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'

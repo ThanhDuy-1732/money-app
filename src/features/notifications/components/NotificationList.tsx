@@ -22,12 +22,13 @@ const TYPE_LABELS: Record<string, string> = {
   finance: 'cập nhật tài chính',
   todo: 'nhắc nhở công việc',
   shop: 'đơn hàng shop',
+  gift: 'bạn vừa nhận điểm tặng',
 }
 
 const TAB_GROUPS: Record<string, string[]> = {
   'Tất cả': [],
   'Xã hội': ['follow', 'like', 'comment', 'referral'],
-  'Tài chính': ['finance', 'points'],
+  'Tài chính': ['finance', 'points', 'gift'],
   'Công việc': ['todo'],
   'Shop': ['shop'],
 }

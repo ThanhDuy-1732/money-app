@@ -1,11 +1,13 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
 import { escapeLike } from '@/lib/escape-like'
+import type { PostCardPost } from '@/features/feed/components/PostCard'
 
 export type SearchPost = {
   id: string
   content: string | null
   created_at: string
+  tags?: string[] | null
   profiles: { display_name: string; avatar_url: string | null }
 }
 
@@ -50,6 +52,20 @@ export async function searchContent(
     posts: (rawPosts ?? []) as SearchPost[],
     users: rawUsers as SearchUser[],
   }
+}
+
+export async function searchByTag(tag: string): Promise<PostCardPost[]> {
+  if (!tag) return []
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('posts')
+    .select('*, profiles(display_name, avatar_url), comments(*, profiles(display_name, avatar_url))')
+    .eq('hidden', false)
+    .is('deleted_at', null)
+    .contains('tags', [tag.toLowerCase()])
+    .order('created_at', { ascending: false })
+    .limit(30)
+  return (data ?? []) as PostCardPost[]
 }
 
 /**

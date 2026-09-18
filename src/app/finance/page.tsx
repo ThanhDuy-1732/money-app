@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- existing untyped query results; regenerate Supabase types */
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { listTransactions } from '@/features/finance/transaction.actions'
 import { MonthPicker } from '@/features/finance/components/MonthPicker'
+import { getSubscriptionStatus } from '@/features/billing/subscription.actions'
 
 function currentMonth(): string {
   return new Date().toISOString().slice(0, 7)
@@ -27,16 +29,26 @@ export default async function FinancePage({
       ? rawMonth
       : currentMonth()
 
-  const { transactions, totalIncome, totalExpense } = await listTransactions(month)
+  const [{ transactions, totalIncome, totalExpense }, { isPremium }] = await Promise.all([
+    listTransactions(month),
+    getSubscriptionStatus(),
+  ])
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+      <div className="flex flex-wrap gap-2 text-sm">
+        <Link href="/finance/budgets" className="px-3 py-1.5 border rounded-lg text-zinc-600">Ngân sách</Link>
+        <Link href="/finance/goals" className="px-3 py-1.5 border rounded-lg text-zinc-600">Mục tiêu</Link>
+        <Link href="/finance/recurring" className="px-3 py-1.5 border rounded-lg text-zinc-600">Định kỳ</Link>
+      </div>
       <div className="flex items-center justify-between">
         <MonthPicker month={month} />
         <div className="flex gap-2">
-          <Link href="/finance/trends" className="px-3 py-2 border rounded-lg text-sm text-zinc-600">
-            📈 Xu hướng
-          </Link>
+          {isPremium && (
+            <Link href="/finance/trends" className="px-3 py-2 border rounded-lg text-sm text-zinc-600">
+              📈 Xu hướng
+            </Link>
+          )}
           <Link href="/finance/new" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">
             + Thêm giao dịch
           </Link>

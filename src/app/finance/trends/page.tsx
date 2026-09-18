@@ -10,6 +10,10 @@ export default async function TrendsPage() {
       <div className="p-6 text-center">
         <h1 className="text-xl font-bold mb-2">Phân tích xu hướng</h1>
         <p className="text-zinc-500 mb-4">Tính năng này chỉ dành cho thành viên Premium.</p>
+        <div className="flex justify-center gap-2 mb-4">
+          <Link href="/billing/upgrade" className="rounded-lg border px-3 py-1.5 text-sm font-medium">↓ Xuất CSV</Link>
+          <Link href="/billing/upgrade" className="rounded-lg border px-3 py-1.5 text-sm font-medium">↓ Xuất PDF</Link>
+        </div>
         <Link href="/billing/upgrade" className="rounded-lg bg-yellow-500 px-4 py-2 text-sm font-medium text-white">
           Nâng cấp Premium
         </Link>
@@ -32,6 +36,21 @@ export default async function TrendsPage() {
         <p className={`text-2xl font-bold ${netTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
           {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(netTotal)}
         </p>
+      </div>
+      {/* Export — Premium only, same gate already passed above */}
+      <div className="flex gap-2">
+        <a
+          href={`/finance/export?format=csv&month=${new Date().toISOString().slice(0, 7)}`}
+          className="rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-zinc-50"
+        >
+          ↓ Xuất CSV
+        </a>
+        <a
+          href={`/finance/export?format=pdf&month=${new Date().toISOString().slice(0, 7)}`}
+          className="rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-zinc-50"
+        >
+          ↓ Xuất PDF
+        </a>
       </div>
     </div>
   )

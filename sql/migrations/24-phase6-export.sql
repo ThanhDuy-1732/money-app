@@ -1,0 +1,3 @@
+-- sql/migrations/24-phase6-export.sql
+-- Phase 6 export feature: no DB changes required.
+-- This file exists to keep migration numbering consistent with the Phase 6 spec.

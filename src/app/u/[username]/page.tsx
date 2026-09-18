@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader'
 import { FollowButton } from '@/features/profile/components/FollowButton'
 import { FeedList } from '@/features/feed/components/FeedList'
+import { GiftPointsButton } from '@/features/wallet/components/GiftPointsButton'
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params
@@ -32,8 +33,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     <main className="max-w-lg mx-auto px-4">
       <ProfileHeader profile={profile} />
       {user && user.id !== profile.id && (
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center gap-2 mb-6">
           <FollowButton targetUserId={profile.id} initialFollowing={isFollowing} />
+          <GiftPointsButton toUserId={profile.id} />
         </div>
       )}
       <FeedList userId={profile.id} />

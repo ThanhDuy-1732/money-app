@@ -381,6 +381,7 @@ export type Database = {
           id: string
           image_urls: Json
           like_count: number
+          tags: string[]
           user_id: string
         }
         Insert: {
@@ -392,6 +393,7 @@ export type Database = {
           id?: string
           image_urls?: Json
           like_count?: number
+          tags?: string[]
           user_id: string
         }
         Update: {
@@ -403,6 +405,7 @@ export type Database = {
           id?: string
           image_urls?: Json
           like_count?: number
+          tags?: string[]
           user_id?: string
         }
         Relationships: [
@@ -891,6 +894,14 @@ export type Database = {
         Args: { p_query: string; p_limit?: number }
         Returns: Array<{ content: string }>
       }
+      get_finance_trend: {
+        Args: { p_months?: number }
+        Returns: Array<{ month: string; total_income: number; total_expense: number; net: number }>
+      }
+      get_referral_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: Array<{ total_invited: number; total_completed: number; points_earned: number }>
+      }
     }
     Enums: {
       [_ in never]: never
@@ -1026,4 +1037,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

@@ -35,6 +35,22 @@ export const todoSchema = z.object({
   due_date: z.string().optional(), // ISO date string YYYY-MM-DD
 })
 
+export const giftPointsSchema = z.object({
+  amount: z.number().int().positive('Số điểm phải lớn hơn 0').max(200, 'Tối đa 200 điểm/lần tặng'),
+})
+
+export const goalContributionSchema = z.object({
+  amount: z.number().int().positive('Khoản góp phải lớn hơn 0'),
+})
+
+export const recurringSchema = z.object({
+  type: z.enum(['income', 'expense']),
+  amount_vnd: z.number().int().positive('Số tiền phải lớn hơn 0'),
+  category_id: z.string().uuid().optional(),
+  note: z.string().max(200).optional(),
+  start_date: z.iso.date('Ngày không hợp lệ'),
+})
+
 export type TransactionInput = z.infer<typeof transactionSchema>
 export type BudgetInput = z.infer<typeof budgetSchema>
 export type SavingsGoalInput = z.infer<typeof savingsGoalSchema>

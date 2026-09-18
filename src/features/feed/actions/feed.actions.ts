@@ -56,7 +56,7 @@ export async function fetchFeedPage(
   const supabase = await createClient()
 
   const baseSelect = `
-    id, user_id, content, image_urls, like_count, comment_count, created_at,
+    id, user_id, content, tags, image_urls, like_count, comment_count, created_at,
     profiles(display_name, avatar_url),
     comments(id, content, created_at, profiles(display_name, avatar_url))
   `

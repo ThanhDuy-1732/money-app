@@ -17,7 +17,7 @@ export async function createTodo(raw: unknown) {
     const { count } = await supabase
       .from('todos').select('*', { count: 'exact', head: true })
       .eq('user_id', user.id).eq('done', false)
-    const check = checkFreeLimit('activeTodos', count ?? 0)
+    const check = await checkFreeLimit('activeTodos', count ?? 0)
     if (!check.allowed) return { error: check.error! }
   }
 

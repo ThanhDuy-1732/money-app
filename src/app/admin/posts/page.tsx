@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- existing untyped query results; regenerate Supabase types */
 import { listPosts, hidePost, unhidePost } from '@/features/admin/actions/moderation.actions'
 
 export default async function AdminPostsPage() {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- existing untyped query results; regenerate Supabase types */
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { listBudgets, getBudgetProgress } from '@/features/finance/budget.actions'
