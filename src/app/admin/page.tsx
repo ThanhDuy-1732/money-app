@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- existing untyped query results; regenerate Supabase types */
 import { getRevenueSummary, listRecentPayments } from '@/features/admin/actions/dashboard.actions'
 
 function VndAmount({ value }: { value: number }) {

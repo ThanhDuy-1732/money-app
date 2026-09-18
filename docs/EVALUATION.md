@@ -1,7 +1,7 @@
 # Money App — Đánh giá hệ thống (Phase 1 → 5)
 
 > Ngày: 05-09-2026 · Framework: Next.js 16 + Supabase · Trạng thái: Production-ready  
-> Commit mới nhất: Phase 5 hoàn chỉnh — Test suite + Production deploy + Analytics
+> Commit mới nhất: f059109 — Phase 5 hoàn chỉnh + tất cả deferred fixes đã xử lý
 
 ## Stack kỹ thuật
 
@@ -84,7 +84,7 @@
 | Tính năng | Trạng thái | Ghi chú |
 |---|---|---|
 | Unit tests (Vitest) | ✅ Done | 5 test files, 40 tests: `escape-like`, `vnpay-crypto`, `limits`, `auth.validators`, `finance.validators` |
-| E2E tests (Playwright) | ✅ Done | 6 spec files, 9 tests: auth (OTP/login), referral flow, search (LIKE metachar), wallet (VNPAY_MOCK), shop concurrency, admin access control |
+| E2E tests (Playwright) | ✅ Done | 6 spec files, 10 tests: auth (OTP/login), referral flow, search (LIKE metachar), wallet (VNPAY_MOCK), shop concurrency, admin (unauthenticated + authenticated non-admin) |
 | Referral code unique constraint | ✅ Done | Migration 16: `referral_codes(code)` UNIQUE + backfill + trigger |
 | Advanced search with ranking | ✅ Done | Migration 17: `pg_trgm` extension + `immutable_unaccent()` wrapper + `ts_rank()` scoring |
 | Search autocomplete | ✅ Done | Migration 17: `/explore?q=...` suggests posts/users by relevance |
@@ -142,13 +142,33 @@
 
 ## Lộ trình phát triển
 
-### P5 — Horizon
+### P5 — Hoàn chỉnh ✅
 
-1. **Deploy production** — Vercel + Supabase Cloud; thiết lập VNPay production credentials
-2. **Premium analytics** — Dashboard thu/chi nhiều tháng, biểu đồ xu hướng tiết kiệm
-3. **Test suite** — Vitest (unit: actions, validators); Playwright (E2E: auth, payment, search)
-4. **Search nâng cao** — Ranking theo relevance; autocomplete; Vietnamese stemming
-5. **Referral analytics** — Leaderboard giới thiệu; dashboard thống kê referral
+Tất cả hạng mục Phase 5 đã hoàn thành (14 commits, branch `feat/phase5-production-ready`):
+
+- ✅ **Test suite** — Vitest 40 unit tests + Playwright 10 E2E tests
+- ✅ **Advanced search** — `pg_trgm` autocomplete, `ts_rank` ranking, `immutable_unaccent()`
+- ✅ **Premium analytics** — `get_finance_trend()` RPC + `/finance/trends` SVG chart
+- ✅ **Referral analytics** — `get_referral_stats()` RPC + `/invite` leaderboard top 10
+- ✅ **Deploy checklist** — Supabase Cloud + Vercel + VNPay production + mock route guard + PITR
+- ✅ **referral_code UNIQUE** — Migration 16 backfill + constraint + trigger
+
+### P6 — Feature Connections (code complete; database smoke pending)
+
+- **Sprint 0–1: Gift Points** — `gift_points()` RPC + daily limit (migration 20)
+- **Sprint 2–3: Shared Savings Goals** — 3 tables + `is_goal_member()` (migration 21)
+- **Sprint 4–5: Hashtags** — `posts.tags` + GIN index + `/explore/tag/[tag]` (migration 22)
+- **Sprint 6–7: Recurring Transactions** — `recurring_transactions` + pg_cron (migration 23)
+- **Sprint 8–9: Premium Export** — CSV + PDF (`@react-pdf/renderer`)
+- **Tests** — 57 Vitest unit tests pass; 11 Playwright E2E tests listed (runtime smoke pending)
+
+Migrations 20–23 và các luồng cần Supabase/pg_cron chưa được smoke test trong môi trường hiện tại vì Docker/database không chạy.
+
+### P6 — Horizon
+
+1. **Deploy production** — Thực thi `docs/deploy/production-checklist.md`; thiết lập VNPay production credentials (`supabase secrets set`)
+2. **Admin E2E fixture** — Thêm Playwright `storageState` global setup cho authenticated admin session khi infra ổn định
+3. **Regenerate database.ts** — Chạy `supabase gen types` sau khi apply migrations 16–23 để loại bỏ các `as any` cast còn lại
 
 ---
 

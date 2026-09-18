@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/vi'
@@ -10,16 +11,17 @@ import type { Database } from '@/lib/types/database'
 dayjs.extend(relativeTime)
 dayjs.locale('vi')
 
-type Post = Database['public']['Tables']['posts']['Row'] & {
+export type PostCardPost = Database['public']['Tables']['posts']['Row'] & {
   profiles: { display_name: string; avatar_url: string | null }
   comments: Array<Database['public']['Tables']['comments']['Row'] & {
     profiles: { display_name: string; avatar_url: string | null }
   }>
   user_liked?: boolean
+  tags?: string[] | null
 }
 
-export function PostCard({ post, currentUserId }: { post: Post; currentUserId?: string }) {
-  const images = (post.image_urls as any as string[]) ?? []
+export function PostCard({ post, currentUserId }: { post: PostCardPost; currentUserId?: string }) {
+  const images = post.image_urls as string[]
   return (
     <article className="border rounded-lg p-4 space-y-3">
       <div className="flex items-center gap-3">
@@ -30,6 +32,19 @@ export function PostCard({ post, currentUserId }: { post: Post; currentUserId?: 
         </div>
       </div>
       {post.content && <p className="text-sm text-gray-800">{post.content}</p>}
+      {post.tags && post.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {post.tags.map(tag => (
+            <Link
+              key={tag}
+              href={`/explore/tag/${encodeURIComponent(tag)}`}
+              className="text-xs text-blue-600 hover:underline"
+            >
+              #{tag}
+            </Link>
+          ))}
+        </div>
+      )}
       {images.length > 0 && (
         <div className="grid grid-cols-2 gap-1">
           {images.map(url => <img key={url} src={url} alt="" className="rounded object-cover w-full aspect-square" />)}
@@ -39,7 +54,7 @@ export function PostCard({ post, currentUserId }: { post: Post; currentUserId?: 
         <LikeButton postId={post.id} initialCount={post.like_count} initialLiked={post.user_liked ?? false} />
         <span className="text-sm text-gray-500 self-center">💬 {post.comment_count}</span>
       </div>
-      <CommentList comments={post.comments} />
+      <CommentList comments={post.comments ?? []} />
       {currentUserId && <CommentInput postId={post.id} />}
     </article>
   )

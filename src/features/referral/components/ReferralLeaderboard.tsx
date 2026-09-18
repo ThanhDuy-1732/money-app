@@ -8,10 +8,12 @@ type LeaderboardRow = {
 
 export async function ReferralLeaderboard() {
   const supabase = await createClient()
+  // ponytail: referral_leaderboard view not in generated types; add when types are regenerated
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data } = await (supabase as any)
     .from('referral_leaderboard')
     .select('display_name, avatar_url, total_referrals')
+    .order('total_referrals', { ascending: false })
     .limit(10)
 
   const rows = (data ?? []) as LeaderboardRow[]

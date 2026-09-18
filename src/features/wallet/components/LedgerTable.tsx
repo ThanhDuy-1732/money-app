@@ -17,6 +17,8 @@ const REASON_LABELS: Record<string, string> = {
   referral_out: 'Mời bạn thành công',
   redeem: 'Đổi điểm',
   adjustment: 'Nạp tiền',
+  gift_sent: 'Tặng điểm',
+  gift_received: 'Nhận điểm tặng',
 }
 
 export function LedgerTable({ rows }: { rows: LedgerRow[] }) {

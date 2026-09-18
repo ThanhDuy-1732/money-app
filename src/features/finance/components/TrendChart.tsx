@@ -1,10 +1,6 @@
 import type { TrendRow } from '@/features/finance/actions/trend.actions'
 import dayjs from 'dayjs'
 
-function fmt(n: number) {
-  return new Intl.NumberFormat('vi-VN', { notation: 'compact', maximumFractionDigits: 1 }).format(n)
-}
-
 export function TrendChart({ data }: { data: TrendRow[] }) {
   if (data.length === 0)
     return <p className="text-zinc-500 text-sm">Chưa có giao dịch nào trong 6 tháng qua.</p>

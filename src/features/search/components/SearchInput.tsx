@@ -1,6 +1,6 @@
 'use client'
 import { useRouter } from 'next/navigation'
-import { useState, useTransition, useRef } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import { autocompleteSearch } from '@/features/search/actions/search.actions'
 
 export function SearchInput({ defaultValue = '' }: { defaultValue?: string }) {
@@ -8,6 +8,8 @@ export function SearchInput({ defaultValue = '' }: { defaultValue?: string }) {
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [, startTransition] = useTransition()
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => () => clearTimeout(timer.current), [])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     clearTimeout(timer.current)

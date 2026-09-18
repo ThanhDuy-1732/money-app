@@ -15,10 +15,10 @@ export default async function GoalsPage() {
       {goals.length === 0 && (
         <p className="text-center text-gray-400 py-8">Chưa có mục tiêu nào.</p>
       )}
-      {goals.map((g: any) => {
+      {goals.map(g => {
         const pct = Math.min((g.current_amount / g.target_amount) * 100, 100)
         return (
-          <div key={g.id} className="border rounded-xl p-4 space-y-2">
+          <a key={g.id} href={`/finance/goals/${g.id}`} className="block border rounded-xl p-4 space-y-2 hover:border-blue-300 transition-colors">
             <div className="flex justify-between items-start">
               <div>
                 <p className="font-semibold">{g.name}</p>
@@ -34,7 +34,7 @@ export default async function GoalsPage() {
             <p className="text-sm text-gray-500">
               {g.current_amount.toLocaleString('vi-VN')}đ / {g.target_amount.toLocaleString('vi-VN')}đ ({pct.toFixed(0)}%)
             </p>
-          </div>
+          </a>
         )
       })}
     </main>

@@ -14,10 +14,8 @@ export async function getFinanceTrend(months = 6): Promise<TrendRow[] | { error:
   if (!isPremium) return { error: 'premium_required' }
 
   const supabase = await createClient()
-  // ponytail: cast to any — rpc types don't include get_finance_trend; add to generated types when supabase types are regenerated
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any).rpc('get_finance_trend', { p_months: months })
-  if (error) return { error: (error as { message: string }).message }
+  const { data, error } = await supabase.rpc('get_finance_trend', { p_months: months })
+  if (error) return { error: error.message }
 
   const rows = (data ?? []) as { month: string; total_income: number; total_expense: number }[]
   return rows.map((row) => ({

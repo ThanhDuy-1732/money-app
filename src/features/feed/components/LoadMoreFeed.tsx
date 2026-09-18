@@ -28,26 +28,24 @@ export function LoadMoreFeed({
 
   useEffect(() => {
     if (done) return
+    async function loadMore() {
+      if (!cursor || loading) return
+      setLoading(true)
+      const { posts: next, nextCursor } = await fetchFeedPage(cursor, userId ?? null, followingOnly)
+      setPosts(prev => [...prev, ...(next as FeedPost[])])
+      if (!nextCursor) setDone(true)
+      else setCursor(nextCursor)
+      setLoading(false)
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !loading) loadMore()
+        if (entry.isIntersecting && !loading) void loadMore()
       },
       { rootMargin: '200px' }
     )
     if (sentinelRef.current) observer.observe(sentinelRef.current)
     return () => observer.disconnect()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cursor, loading, done])
-
-  async function loadMore() {
-    if (!cursor || loading) return
-    setLoading(true)
-    const { posts: next, nextCursor } = await fetchFeedPage(cursor, userId ?? null, followingOnly)
-    setPosts(prev => [...prev, ...(next as FeedPost[])])
-    if (!nextCursor) setDone(true)
-    else setCursor(nextCursor)
-    setLoading(false)
-  }
+  }, [cursor, loading, done, userId, followingOnly])
 
   return (
     <>
