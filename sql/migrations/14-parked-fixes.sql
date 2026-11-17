@@ -72,7 +72,7 @@ BEGIN
       VALUES (v_payment.user_id, v_product_id, 'vnpay', v_payment.amount_vnd, 'failed')
       RETURNING id INTO v_order_id;
 
-      INSERT INTO public.notifications (user_id, type, data)
+      INSERT INTO public.notifications (user_id, type, payload)
       VALUES (
         v_payment.user_id,
         'shop',

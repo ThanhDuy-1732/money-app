@@ -9,7 +9,7 @@ ALTER TABLE public.points_ledger ADD CONSTRAINT points_ledger_reason_code_check
   CHECK (reason_code IN (
     'signup','profile_complete','streak','post','referral_in',
     'referral_out','redeem','adjustment','savings_goal_achieved',
-    'subscription_points','shop_purchase_points'
+    'subscription_points','shop_purchase_points','topup'
   ));
 
 -- 2. Partners

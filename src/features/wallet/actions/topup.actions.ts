@@ -14,13 +14,17 @@ const IS_PROD = process.env.NODE_ENV === 'production'
 const MOCK_MODE = process.env.VNPAY_MOCK === '1' && !IS_PROD
 
 if (IS_PROD && (!VNPAY_TMN_CODE || !VNPAY_HASH_SECRET)) {
-  throw new Error('[topup] VNPAY_TMN_CODE và VNPAY_HASH_SECRET phải được cấu hình trên production')
+  console.warn('[topup] VNPAY_TMN_CODE/VNPAY_HASH_SECRET chưa cấu hình — nạp điểm sẽ tạm tắt')
 }
 
 export async function createVNPayOrder(
   amountVnd: number,
 ): Promise<{ url?: string; error: string | null }> {
   if (amountVnd < 10_000 || amountVnd > 50_000_000) return { error: 'Số tiền phải từ 10.000 đến 50.000.000 VNĐ' }
+
+  if (!MOCK_MODE && (!VNPAY_TMN_CODE || !VNPAY_HASH_SECRET)) {
+    return { error: 'VNPay chưa được cấu hình trên môi trường này' }
+  }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -82,7 +86,7 @@ export async function verifyVNPayReturn(
   }
 
   const { vnp_SecureHash, vnp_SecureHashType: _t, ...rest } = searchParams
-  if (!vnp_SecureHash) return { success: false }
+  if (!vnp_SecureHash || !VNPAY_HASH_SECRET) return { success: false }
 
   const computed = vnpaySign(rest, VNPAY_HASH_SECRET)
   if (!timingSafeCompare(computed, vnp_SecureHash)) return { success: false }

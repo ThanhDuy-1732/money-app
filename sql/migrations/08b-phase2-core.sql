@@ -11,7 +11,7 @@ ALTER TABLE public.points_ledger ADD CONSTRAINT points_ledger_reason_code_check
   CHECK (reason_code IN (
     'signup', 'profile_complete', 'streak', 'post',
     'referral_in', 'referral_out', 'redeem', 'adjustment',
-    'savings_goal_achieved', 'subscription_points'
+    'savings_goal_achieved', 'subscription_points', 'topup'
   ));
 
 -- 3. Extend notifications type constraint

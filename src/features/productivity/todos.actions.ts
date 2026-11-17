@@ -2,7 +2,8 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { todoSchema } from '@/lib/validators/finance'
-import { getSubscriptionStatus, checkFreeLimit } from '@/features/billing/subscription.actions'
+import { getSubscriptionStatus } from '@/features/billing/subscription.actions'
+import { checkFreeLimit } from '@/lib/constants/limits'
 
 export async function createTodo(raw: unknown) {
   const parsed = todoSchema.safeParse(raw)

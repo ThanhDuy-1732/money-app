@@ -39,6 +39,7 @@ run_sql() {
 # run_sql "docs/requirement/schema.sql"  # Chỉ bỏ comment nếu cần reset từ đầu
 
 # Triggers gamification
+run_sql "sql/triggers/00-handle-new-user.sql"
 run_sql "sql/triggers/01-signup-bonus.sql"
 run_sql "sql/triggers/02-profile-complete.sql"
 run_sql "sql/triggers/03-post-bonus.sql"

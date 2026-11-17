@@ -1,6 +1,6 @@
 -- Migration 17: Advanced search — ts_rank ranking + pg_trgm autocomplete
-create extension if not exists pg_trgm;
-create extension if not exists unaccent;
+create extension if not exists pg_trgm with schema extensions;
+create extension if not exists unaccent with schema extensions;
 
 -- Wrapper required to use unaccent() in indexes/generated columns
 -- (unaccent() is STABLE, not IMMUTABLE — this wrapper is safe because the
@@ -10,8 +10,9 @@ returns text
 language sql
 immutable
 parallel safe
+set search_path = public, extensions
 as $$
-  select unaccent('unaccent', $1);
+  select unaccent($1);
 $$;
 
 -- GIN trigram index for autocomplete on post content (unaccented)
@@ -27,7 +28,7 @@ create or replace function public.autocomplete_posts(p_query text, p_limit integ
 returns table (content text)
 language sql
 security definer
-set search_path = public
+set search_path = public, extensions
 stable
 as $$
   select p.content

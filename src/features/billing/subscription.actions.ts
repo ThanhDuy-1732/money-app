@@ -1,7 +1,7 @@
 'use server'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { FREE_LIMITS, PREMIUM_POINTS_COST } from '@/lib/constants/limits'
+import { PREMIUM_POINTS_COST } from '@/lib/constants/limits'
 
 export async function getSubscriptionStatus(): Promise<{ isPremium: boolean; expiresAt: Date | null }> {
   const supabase = await createClient()
@@ -31,12 +31,3 @@ export async function subscribeWithPoints() {
   return { error: null }
 }
 
-export function checkFreeLimit(
-  feature: keyof typeof FREE_LIMITS,
-  currentCount: number
-): { allowed: boolean; error?: string } {
-  if (currentCount >= FREE_LIMITS[feature]) {
-    return { allowed: false, error: `Đã đạt giới hạn ${FREE_LIMITS[feature]} cho gói Free` }
-  }
-  return { allowed: true }
-}

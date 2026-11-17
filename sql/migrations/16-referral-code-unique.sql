@@ -9,8 +9,18 @@ set referral_code = lower(substr(encode(sha256(id::text::bytea), 'hex'), 1, 8))
 where referral_code is null;
 
 -- 2. Add UNIQUE constraint (now safe — no NULLs, and SHA-256 of distinct UUIDs is distinct)
-alter table public.profiles
-  add constraint profiles_referral_code_unique unique (referral_code);
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'profiles_referral_code_unique'
+      and conrelid = 'public.profiles'::regclass
+  ) then
+    alter table public.profiles
+      add constraint profiles_referral_code_unique unique (referral_code);
+  end if;
+end;
+$$;
 
 -- 3. Trigger function for new users — generates a random 8-char code, retries on collision
 create or replace function public.generate_referral_code()

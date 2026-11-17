@@ -18,6 +18,7 @@ create index if not exists idx_payments_user on public.payments (user_id, create
 alter table public.payments enable row level security;
 
 -- User có thể xem giao dịch của chính mình
+drop policy if exists "payments_select_own" on public.payments;
 create policy "payments_select_own" on public.payments
   for select using (auth.uid() = user_id);
 
@@ -25,6 +26,7 @@ create policy "payments_select_own" on public.payments
 -- ponytail: đây là trade-off có chủ ý — Server Action tạo row 'pending', webhook
 -- xác thực chữ ký VNPay và mới update status. Nếu cần lock hoàn toàn INSERT,
 -- tạo thêm Edge Function create-payment chạy với service_role.
+drop policy if exists "payments_insert_own" on public.payments;
 create policy "payments_insert_own" on public.payments
   for insert with check (auth.uid() = user_id);
 

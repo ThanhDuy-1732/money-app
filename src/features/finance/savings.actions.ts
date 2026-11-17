@@ -2,7 +2,8 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { savingsGoalSchema, savingsProgressSchema } from '@/lib/validators/finance'
-import { getSubscriptionStatus, checkFreeLimit } from '@/features/billing/subscription.actions'
+import { getSubscriptionStatus } from '@/features/billing/subscription.actions'
+import { checkFreeLimit } from '@/lib/constants/limits'
 
 export async function createSavingsGoal(raw: unknown) {
   const parsed = savingsGoalSchema.safeParse(raw)
