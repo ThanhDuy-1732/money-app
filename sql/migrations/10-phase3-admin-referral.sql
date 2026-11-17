@@ -70,8 +70,10 @@ STABLE
 AS $$
   SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin');
 $$;
-REVOKE EXECUTE ON FUNCTION public.is_admin() FROM public, anon;
-GRANT  EXECUTE ON FUNCTION public.is_admin() TO authenticated;
+-- anon cũng cần EXECUTE vì policy admin_* được evaluate khi anon đọc posts/profiles.
+-- Hàm chỉ trả false khi auth.uid() null nên không lộ quyền admin.
+REVOKE EXECUTE ON FUNCTION public.is_admin() FROM public;
+GRANT  EXECUTE ON FUNCTION public.is_admin() TO authenticated, anon;
 
 -- 7. Admin RLS policies (additive — existing user policies stay)
 CREATE POLICY "admin_select_all_profiles"       ON public.profiles     FOR SELECT USING (public.is_admin());
