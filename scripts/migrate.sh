@@ -71,6 +71,7 @@ run_sql "sql/migrations/16-referral-code-unique.sql"
 run_sql "sql/migrations/17-search-advanced.sql"
 run_sql "sql/migrations/18-finance-trend-rpc.sql"
 run_sql "sql/migrations/19-referral-analytics.sql"
+run_sql "sql/migrations/20-realtime-publication.sql"
 
 echo ""
 echo "✅ Migrations hoàn tất."
