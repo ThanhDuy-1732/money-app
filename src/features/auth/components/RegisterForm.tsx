@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { registerSchema, otpSchema, type RegisterInput, type OtpInput } from '@/lib/validators/auth'
 import { signUpWithEmail, verifyOtp } from '../actions/auth.actions'
-import { Button, Input } from '@/components/ui'
+import { Button, Field, Input } from '@/components/ui'
 import { OtpInput as OtpInputComp } from './OtpInput'
 
 export function RegisterForm() {
@@ -18,7 +18,10 @@ export function RegisterForm() {
   async function onEmailSubmit(data: RegisterInput) {
     setServerError(null)
     const result = await signUpWithEmail(data.email, data.display_name)
-    if (result.error) { setServerError(result.error); return }
+    if (result.error) {
+      setServerError(result.error)
+      return
+    }
     setEmail(data.email)
     setStep('otp')
   }
@@ -29,34 +32,70 @@ export function RegisterForm() {
     if (result?.error) setServerError(result.error)
   }
 
-  if (step === 'otp') return (
-    <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="space-y-4">
-      <p className="text-sm text-gray-600">Nhập mã 6 số đã gửi đến <strong>{email}</strong></p>
-      <OtpInputComp
-        value={otpForm.watch('otp') ?? ''}
-        onChange={(v: string) => otpForm.setValue('otp', v)}
-      />
-      {otpForm.formState.errors.otp && <p className="text-sm text-red-500">{otpForm.formState.errors.otp.message}</p>}
-      {serverError && <p className="text-sm text-red-500">{serverError}</p>}
-      <Button type="submit" className="w-full" disabled={otpForm.formState.isSubmitting}>
-        {otpForm.formState.isSubmitting ? 'Đang xác nhận...' : 'Xác nhận'}
-      </Button>
-    </form>
-  )
+  const errorBanner = serverError ? (
+    <p
+      role="alert"
+      className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm font-medium text-destructive"
+    >
+      {serverError}
+    </p>
+  ) : null
+
+  if (step === 'otp') {
+    return (
+      <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Nhập mã 6 số đã gửi đến <strong className="text-foreground">{email}</strong>
+        </p>
+        <Field label="Mã OTP" htmlFor="register-otp" error={otpForm.formState.errors.otp?.message}>
+          <OtpInputComp
+            id="register-otp"
+            invalid={!!otpForm.formState.errors.otp}
+            aria-describedby={otpForm.formState.errors.otp ? 'register-otp-error' : undefined}
+            value={otpForm.watch('otp') ?? ''}
+            onChange={(v: string) => otpForm.setValue('otp', v)}
+          />
+        </Field>
+        {errorBanner}
+        <Button type="submit" fullWidth loading={otpForm.formState.isSubmitting}>
+          Xác nhận
+        </Button>
+      </form>
+    )
+  }
 
   return (
     <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
-      <div>
-        <Input placeholder="Tên hiển thị" {...emailForm.register('display_name')} />
-        {emailForm.formState.errors.display_name && <p className="text-sm text-red-500">{emailForm.formState.errors.display_name.message}</p>}
-      </div>
-      <div>
-        <Input type="email" placeholder="Email" {...emailForm.register('email')} />
-        {emailForm.formState.errors.email && <p className="text-sm text-red-500">{emailForm.formState.errors.email.message}</p>}
-      </div>
-      {serverError && <p className="text-sm text-red-500">{serverError}</p>}
-      <Button type="submit" className="w-full" disabled={emailForm.formState.isSubmitting}>
-        {emailForm.formState.isSubmitting ? 'Đang gửi...' : 'Đăng ký'}
+      <Field
+        label="Tên hiển thị"
+        htmlFor="register-name"
+        error={emailForm.formState.errors.display_name?.message}
+      >
+        <Input
+          id="register-name"
+          placeholder="Minh Anh"
+          autoComplete="name"
+          invalid={!!emailForm.formState.errors.display_name}
+          aria-describedby={
+            emailForm.formState.errors.display_name ? 'register-name-error' : undefined
+          }
+          {...emailForm.register('display_name')}
+        />
+      </Field>
+      <Field label="Email" htmlFor="register-email" error={emailForm.formState.errors.email?.message}>
+        <Input
+          id="register-email"
+          type="email"
+          placeholder="ban@example.com"
+          autoComplete="email"
+          invalid={!!emailForm.formState.errors.email}
+          aria-describedby={emailForm.formState.errors.email ? 'register-email-error' : undefined}
+          {...emailForm.register('email')}
+        />
+      </Field>
+      {errorBanner}
+      <Button type="submit" fullWidth loading={emailForm.formState.isSubmitting}>
+        Đăng ký
       </Button>
     </form>
   )
