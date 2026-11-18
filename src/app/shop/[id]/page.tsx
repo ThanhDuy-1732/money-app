@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getProduct, purchaseWithPoints } from '@/features/shop/actions/shop.actions'
+import { Button, Card, CardBody, PageHeader } from '@/components/ui'
 
 export default async function ProductPage({
   params,
@@ -21,42 +22,51 @@ export default async function ProductPage({
   }
 
   return (
-    <main className="max-w-lg mx-auto px-4 py-6 space-y-4">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+    <main className="mx-auto max-w-narrow space-y-6 px-4 py-6">
+      <PageHeader
+        title={product.title ?? 'Sản phẩm'}
+        description={product.shop_partners?.name ?? undefined}
+        backHref="/shop"
+      />
+
       {product.image_url && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={product.image_url}
           alt={product.title ?? ''}
-          className="w-full h-48 object-cover rounded-xl"
+          className="h-48 w-full rounded-lg border border-border object-cover"
         />
       )}
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <p className="text-sm text-gray-400">{(product.shop_partners as any)?.name}</p>
-      <h1 className="text-2xl font-bold">{product.title}</h1>
+
       {product.description && (
-        <p className="text-sm text-gray-600">{product.description}</p>
+        <p className="text-sm text-muted-foreground">{product.description}</p>
       )}
 
       {error && (
-        <div className="border border-red-200 bg-red-50 dark:bg-red-950 rounded-xl p-3">
-          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
-        </div>
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm font-medium text-destructive"
+        >
+          {error}
+        </p>
       )}
 
-      <div className="border rounded-xl p-4 space-y-3">
-        {product.price_points && (
-          <form action={handleBuyWithPoints}>
-            <button className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-              Mua bằng {product.price_points.toLocaleString()} điểm
-            </button>
-          </form>
-        )}
-        {product.price_vnd && (
-          <p className="text-center text-sm text-gray-500">
-            Mua bằng VNPay ({Number(product.price_vnd).toLocaleString('vi-VN')}đ) — sắp có
-          </p>
-        )}
-      </div>
+      <Card>
+        <CardBody className="space-y-3 pt-4">
+          {product.price_points && (
+            <form action={handleBuyWithPoints}>
+              <Button type="submit" variant="coin" fullWidth>
+                Mua bằng {product.price_points.toLocaleString('vi-VN')} điểm
+              </Button>
+            </form>
+          )}
+          {product.price_vnd && (
+            <p className="text-center text-sm text-muted-foreground">
+              Mua bằng VNPay ({Number(product.price_vnd).toLocaleString('vi-VN')}đ) — sắp có
+            </p>
+          )}
+        </CardBody>
+      </Card>
     </main>
   )
 }

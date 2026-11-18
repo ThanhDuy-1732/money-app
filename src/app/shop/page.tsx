@@ -1,50 +1,61 @@
 import Link from 'next/link'
 import { listProducts } from '@/features/shop/actions/shop.actions'
+import { Amount, Badge, Button, EmptyState, PageHeader } from '@/components/ui'
 
 export default async function ShopPage() {
   const products = await listProducts()
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold">Shop</h1>
-        <Link href="/shop/orders" className="text-sm text-blue-600 hover:underline">
-          Đơn của tôi →
-        </Link>
-      </div>
+    <main className="mx-auto max-w-default space-y-6 px-4 py-6">
+      <PageHeader
+        title="Cửa hàng"
+        description="Đổi điểm lấy quà và voucher."
+        actions={
+          <Button asChild variant="outline" size="sm">
+            <Link href="/shop/orders">Đơn của tôi</Link>
+          </Button>
+        }
+      />
 
       {products.length === 0 ? (
-        <p className="text-center text-gray-400 py-12">Chưa có sản phẩm.</p>
+        <EmptyState
+          title="Chưa có sản phẩm"
+          description="Cửa hàng sẽ sớm cập nhật sản phẩm mới."
+        />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {products.map((p) => (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {products.map(product => (
             <Link
-              key={p.id}
-              href={`/shop/${p.id}`}
-              className="border rounded-xl p-4 hover:border-blue-400 transition-colors"
+              key={product.id}
+              href={`/shop/${product.id}`}
+              data-testid="shop-card"
+              className="group overflow-hidden rounded-lg border border-border bg-card transition-colors hover:border-primary/40"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              {p.image_url && (
+              {product.image_url && (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={p.image_url}
-                  alt={p.title ?? ''}
-                  className="w-full h-32 object-cover rounded-lg mb-3"
+                  src={product.image_url}
+                  alt={product.title ?? ''}
+                  className="h-32 w-full object-cover"
                 />
               )}
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              <p className="text-xs text-gray-400">{(p.shop_partners as any)?.name}</p>
-              <p className="font-semibold mt-0.5">{p.title}</p>
-              <div className="flex gap-2 mt-2 text-sm">
-                {p.price_points && (
-                  <span className="text-amber-600">
-                    {p.price_points.toLocaleString()} điểm
-                  </span>
-                )}
-                {p.price_vnd && (
-                  <span className="text-green-700">
-                    {Number(p.price_vnd).toLocaleString('vi-VN')}đ
-                  </span>
-                )}
+              <div className="space-y-1 p-4">
+                <p className="text-xs text-muted-foreground">
+                  {product.shop_partners?.name}
+                </p>
+                <p className="font-semibold">{product.title}</p>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  {product.price_points && (
+                    <Badge variant="coin">
+                      <Amount value={product.price_points} kind="points" tone="coin" />
+                    </Badge>
+                  )}
+                  {product.price_vnd && (
+                    <Badge variant="neutral">
+                      <Amount value={Number(product.price_vnd)} kind="vnd" />
+                    </Badge>
+                  )}
+                </div>
               </div>
             </Link>
           ))}
