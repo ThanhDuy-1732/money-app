@@ -6,13 +6,15 @@ type Profile = Database['public']['Tables']['profiles']['Row']
 export function ProfileHeader({
   profile,
   showStats = true,
+  showAvatar = true,
 }: {
   profile: Profile
   showStats?: boolean
+  showAvatar?: boolean
 }) {
   return (
     <div className="flex flex-col items-center gap-3 py-6 text-center">
-      <Avatar src={profile.avatar_url} fallback={profile.display_name} size="xl" ring />
+      {showAvatar && <Avatar src={profile.avatar_url} fallback={profile.display_name} size="xl" ring />}
       <div>
         <h1 className="text-h2 font-extrabold tracking-tight">{profile.display_name}</h1>
         {profile.username && <p className="text-sm text-muted-foreground">@{profile.username}</p>}

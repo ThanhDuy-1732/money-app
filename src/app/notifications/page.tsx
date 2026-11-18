@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { NotificationList } from '@/features/notifications/components/NotificationList'
+import { PageHeader } from '@/components/ui'
 
 export default async function NotificationsPage() {
   const supabase = await createClient()
@@ -15,8 +16,11 @@ export default async function NotificationsPage() {
     .limit(50)
 
   return (
-    <main className="max-w-lg mx-auto px-4 py-6">
-      <h1 className="text-xl font-bold mb-4">Thông báo</h1>
+    <main className="mx-auto max-w-narrow space-y-6 px-4 py-6">
+      <PageHeader
+        title="Thông báo"
+        description="Hoạt động mới từ bạn bè, ví điểm và cửa hàng."
+      />
       <NotificationList initialItems={notifications ?? []} userId={user.id} />
     </main>
   )

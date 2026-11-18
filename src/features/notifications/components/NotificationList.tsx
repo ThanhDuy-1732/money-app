@@ -1,11 +1,23 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/vi'
+import {
+  Bell,
+  Coins,
+  Gift,
+  Heart,
+  ListChecks,
+  MessageCircle,
+  Store,
+  UserPlus,
+  WalletCards,
+  type LucideIcon,
+} from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { markAllAsRead } from '../actions/notifications.actions'
-import { Button } from '@/components/ui'
+import { Button, EmptyState, Segmented } from '@/components/ui'
 import type { Database } from '@/lib/types/database'
 
 dayjs.extend(relativeTime)
@@ -24,6 +36,17 @@ const TYPE_LABELS: Record<string, string> = {
   shop: 'đơn hàng shop',
 }
 
+const TYPE_ICONS: Record<string, LucideIcon> = {
+  follow: UserPlus,
+  like: Heart,
+  comment: MessageCircle,
+  points: Coins,
+  referral: Gift,
+  finance: WalletCards,
+  todo: ListChecks,
+  shop: Store,
+}
+
 const TAB_GROUPS: Record<string, string[]> = {
   'Tất cả': [],
   'Xã hội': ['follow', 'like', 'comment', 'referral'],
@@ -32,7 +55,15 @@ const TAB_GROUPS: Record<string, string[]> = {
   'Shop': ['shop'],
 }
 
-export function NotificationList({ initialItems, userId }: { initialItems: Notification[]; userId: string }) {
+const TABS = Object.keys(TAB_GROUPS).map(tab => ({ value: tab, label: tab }))
+
+export function NotificationList({
+  initialItems,
+  userId,
+}: {
+  initialItems: Notification[]
+  userId: string
+}) {
   const [items, setItems] = useState(initialItems)
   const [activeTab, setActiveTab] = useState('Tất cả')
 
@@ -46,49 +77,58 @@ export function NotificationList({ initialItems, userId }: { initialItems: Notif
         payload => setItems(prev => [payload.new as Notification, ...prev])
       )
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [userId])
 
-  const filtered = activeTab === 'Tất cả'
-    ? items
-    : items.filter(n => TAB_GROUPS[activeTab]?.includes(n.type))
+  const filtered =
+    activeTab === 'Tất cả'
+      ? items
+      : items.filter(item => TAB_GROUPS[activeTab]?.includes(item.type))
 
   return (
-    <div className="space-y-3">
-      {/* Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {Object.keys(TAB_GROUPS).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`shrink-0 text-xs px-3 py-1 rounded-full border transition-colors ${
-              activeTab === tab
-                ? 'bg-blue-600 text-white border-blue-600'
-                : 'border-gray-300 text-gray-600 hover:border-blue-400'
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+    <div className="space-y-4">
+      <Segmented options={TABS} value={activeTab} onValueChange={setActiveTab} />
 
       <div className="flex justify-end">
-        <Button variant="ghost" size="sm" onClick={() => markAllAsRead()}>Đánh dấu đã đọc</Button>
+        <Button variant="ghost" size="sm" onClick={() => markAllAsRead()}>
+          Đánh dấu đã đọc
+        </Button>
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-center text-gray-400 py-8">Chưa có thông báo.</p>
+        <EmptyState
+          title="Chưa có thông báo"
+          description="Hoạt động mới từ bạn bè, ví điểm và cửa hàng sẽ xuất hiện ở đây."
+        />
       ) : (
-        <div className="space-y-1">
-          {filtered.map(n => (
-            <div key={n.id} className={`flex items-start gap-3 p-3 rounded-lg ${n.read_at ? '' : 'bg-blue-50 dark:bg-blue-950'}`}>
-              <div className="flex-1">
-                <p className="text-sm">{TYPE_LABELS[n.type] ?? n.type}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{dayjs(n.created_at).fromNow()}</p>
+        <div className="space-y-2">
+          {filtered.map(notification => {
+            const Icon = TYPE_ICONS[notification.type] ?? Bell
+            return (
+              <div
+                key={notification.id}
+                className={`flex items-start gap-3 rounded-lg border border-border p-3 ${
+                  notification.read_at ? 'bg-card' : 'bg-secondary'
+                }`}
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-card text-primary">
+                  <Icon className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm">{TYPE_LABELS[notification.type] ?? notification.type}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {dayjs(notification.created_at).fromNow()}
+                  </p>
+                </div>
+                {!notification.read_at && (
+                  <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                )}
               </div>
-              {!n.read_at && <span className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0" />}
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
