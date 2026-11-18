@@ -1,26 +1,232 @@
 @import "tailwindcss";
 
+/* Palette: giấy / mực / lá / sen / xu — lấy từ tờ polymer và đồng xu.
+   Màu mặc định của Tailwind được ánh xạ lại để toàn app đổi diện mạo từ gốc. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Semantic tokens — light */
+  --background: #edf2ef;
+  --foreground: #10231c;
+  --card: #f7faf7;
+  --card-foreground: #10231c;
+  --muted: #e3eae4;
+  --muted-foreground: #5b6b63;
+  --border: #d2dbd7;
+  --input: #ffffff;
+  --ring: #1e6b52;
+  --primary: #1e6b52;
+  --primary-foreground: #f7faf7;
+  --secondary: #d3ebe0;
+  --secondary-foreground: #134334;
+  --accent: #f0b429;
+  --accent-foreground: #10231c;
+  --destructive: #c93a64;
+  --destructive-foreground: #ffffff;
+  --coin: #f0b429;
+  --coin-deep: #b9820a;
+  --lotus: #c93a64;
+  --leaf: #1e6b52;
+  --paper: #edf2ef;
+  --paper-deep: #e3eae4;
+  --ink: #10231c;
+  --security-1: #7bd3b0;
+  --security-2: #f0b429;
+  --security-3: #e86b8f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Semantic tokens — dark */
+    --background: #0b1512;
+    --foreground: #e6ece9;
+    --card: #12211c;
+    --card-foreground: #e6ece9;
+    --muted: #1a2b25;
+    --muted-foreground: #a6b5ae;
+    --border: #2a3b34;
+    --input: #12211c;
+    --ring: #4fb08c;
+    --primary: #4fb08c;
+    --primary-foreground: #0b1512;
+    --secondary: #1a3a2e;
+    --secondary-foreground: #d3ebe0;
+    --accent: #f0b429;
+    --accent-foreground: #0b1512;
+    --destructive: #e86b8f;
+    --destructive-foreground: #0b1512;
+    --coin: #f0b429;
+    --coin-deep: #f5c65a;
+    --lotus: #e86b8f;
+    --leaf: #4fb08c;
+    --paper: #0b1512;
+    --paper-deep: #12211c;
+    --ink: #e6ece9;
+    --security-1: #7bd3b0;
+    --security-2: #f0b429;
+    --security-3: #e86b8f;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  /* Semantic utilities: bg-background, text-foreground, bg-card, border-border, ... */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-coin: var(--coin);
+  --color-coin-deep: var(--coin-deep);
+  --color-lotus: var(--lotus);
+  --color-leaf: var(--leaf);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-ink: var(--ink);
+  --color-security-1: var(--security-1);
+  --color-security-2: var(--security-2);
+  --color-security-3: var(--security-3);
+
+  --font-sans: var(--font-be-vietnam), system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Type scale */
+  --text-display: 3rem;
+  --text-display--line-height: 1.05;
+  --text-h1: 2rem;
+  --text-h1--line-height: 1.15;
+  --text-h2: 1.5rem;
+  --text-h2--line-height: 1.25;
+  --text-h3: 1.125rem;
+  --text-h3--line-height: 1.35;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.5;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.45;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.4;
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.3;
+
+  /* Radius scale */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+
+  /* Elevation: cards stay flat; only floating layers lift */
+  --shadow-sheet: 0 24px 60px -24px rgb(16 35 28 / 0.35);
+
+  /* Containers */
+  --container-narrow: 40rem;
+  --container-default: 60rem;
+  --container-wide: 75rem;
+
+  /* Legacy remaps — keep during migration so unmigrated pages do not break.
+     New code must use the semantic tokens above. */
+  --color-blue-50: #eaf5f0;
+  --color-blue-100: #d3ebe0;
+  --color-blue-200: #a9d6c3;
+  --color-blue-300: #78bba1;
+  --color-blue-400: #46997d;
+  --color-blue-500: #2c8266;
+  --color-blue-600: #1e6b52;
+  --color-blue-700: #185641;
+  --color-blue-800: #134334;
+  --color-blue-900: #0e3328;
+  --color-blue-950: #08201a;
+  --color-green-50: #eaf5f0;
+  --color-green-100: #d3ebe0;
+  --color-green-200: #a9d6c3;
+  --color-green-300: #78bba1;
+  --color-green-400: #46997d;
+  --color-green-500: #2c8266;
+  --color-green-600: #1e6b52;
+  --color-green-700: #185641;
+  --color-green-800: #134334;
+  --color-red-50: #fdf0f4;
+  --color-red-100: #fbdce5;
+  --color-red-200: #f6b9cb;
+  --color-red-300: #ef8caa;
+  --color-red-400: #e86b8f;
+  --color-red-500: #e0517a;
+  --color-red-600: #c93a64;
+  --color-red-700: #a52d51;
+  --color-red-800: #832544;
+  --color-gray-50: #f4f7f5;
+  --color-gray-100: #e6ece9;
+  --color-gray-200: #d2dbd7;
+  --color-gray-300: #b3c0ba;
+  --color-gray-400: #8a9892;
+  --color-gray-500: #67766f;
+  --color-gray-600: #4d5a54;
+  --color-gray-700: #38443f;
+  --color-gray-800: #25302b;
+  --color-gray-900: #172620;
+  --color-gray-950: #10231c;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    color-scheme: light dark;
+  }
+
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  ::selection {
+    background: var(--color-secondary);
+    color: var(--color-secondary-foreground);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Đồng xu lật khi số dư đổi — chuyển động duy nhất không do người dùng kích hoạt */
+@keyframes coin-flip {
+  from {
+    transform: rotateY(90deg);
+    opacity: 0;
+  }
+  to {
+    transform: rotateY(0);
+    opacity: 1;
+  }
+}
+.coin-flip {
+  animation: coin-flip 0.5s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .coin-flip {
+    animation: none;
+  }
 }
