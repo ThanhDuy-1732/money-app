@@ -1,13 +1,21 @@
 import Link from 'next/link'
-import { Button } from '@/components/ui'
+import { Button, EmptyState } from '@/components/ui'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center space-y-4">
-        <h2 className="text-xl font-semibold">Không tìm thấy trang</h2>
-        <Button asChild><Link href="/feed">Về trang chủ</Link></Button>
-      </div>
-    </div>
+    <main
+      data-testid="not-found"
+      className="mx-auto flex min-h-screen max-w-narrow items-center justify-center px-4 py-12"
+    >
+      <EmptyState
+        title="Không tìm thấy trang"
+        description="Trang bạn tìm có thể đã bị xóa hoặc đường dẫn không đúng."
+        action={
+          <Button asChild>
+            <Link href="/">Về trang chủ</Link>
+          </Button>
+        }
+      />
+    </main>
   )
 }
