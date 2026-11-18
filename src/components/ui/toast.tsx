@@ -7,31 +7,41 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastPrimitive.Provider swipeDirection="right">
       {children}
-      <ToastPrimitive.Viewport className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 w-80" />
+      <ToastPrimitive.Viewport className="fixed inset-x-4 top-4 z-50 flex flex-col gap-2 sm:inset-x-auto sm:bottom-4 sm:right-4 sm:top-auto sm:w-80" />
     </ToastPrimitive.Provider>
   )
 }
 
 export function Toast({
-  open, onOpenChange, title, description, variant = 'default',
+  open,
+  onOpenChange,
+  title,
+  description,
+  variant = 'default',
 }: {
   open: boolean
   onOpenChange: (v: boolean) => void
   title: string
   description?: string
-  variant?: 'default' | 'destructive'
+  variant?: 'default' | 'destructive' | 'success'
 }) {
   return (
     <ToastPrimitive.Root
       open={open}
       onOpenChange={onOpenChange}
       className={cn(
-        'rounded-md p-4 shadow-lg border',
-        variant === 'destructive' ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
+        'rounded-lg border p-4 shadow-sheet',
+        variant === 'destructive' && 'border-destructive/30 bg-destructive/10',
+        variant === 'success' && 'border-primary/30 bg-secondary',
+        variant === 'default' && 'border-border bg-card'
       )}
     >
       <ToastPrimitive.Title className="text-sm font-semibold">{title}</ToastPrimitive.Title>
-      {description && <ToastPrimitive.Description className="text-sm text-gray-500">{description}</ToastPrimitive.Description>}
+      {description && (
+        <ToastPrimitive.Description className="mt-1 text-sm text-muted-foreground">
+          {description}
+        </ToastPrimitive.Description>
+      )}
     </ToastPrimitive.Root>
   )
 }
