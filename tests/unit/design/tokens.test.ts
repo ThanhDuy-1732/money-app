@@ -8,7 +8,8 @@ describe('design tokens', () => {
     for (const token of [
       '--color-primary', '--color-primary-foreground', '--color-card',
       '--color-muted-foreground', '--color-border', '--color-ring',
-      '--color-coin', '--color-lotus', '--color-leaf',
+      '--color-coin', '--color-lotus', '--color-leaf', '--color-overlay',
+      '--color-inverse', '--color-inverse-foreground',
       '--radius-sm', '--radius-lg', '--radius-2xl',
       '--shadow-sheet', '--container-narrow', '--container-wide', '--font-mono',
       '--text-display', '--text-h1', '--text-body', '--text-micro',

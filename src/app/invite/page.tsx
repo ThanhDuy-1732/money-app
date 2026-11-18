@@ -56,7 +56,7 @@ export default async function InvitePage() {
         <Stat label="Hoàn thành" value={stats.completed} tone="leaf" />
         <Stat
           label="Điểm đã nhận"
-          value={<Amount value={stats.pointsEarned} kind="points" tone="coin" />}
+          value={<Amount value={stats.pointsEarned} kind="points" tone="coin" size="stat" />}
         />
       </div>
 

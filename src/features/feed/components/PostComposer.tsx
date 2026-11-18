@@ -65,7 +65,7 @@ export function PostComposer({ userId }: { userId: string }) {
           maxLength={500}
           value={content}
           onChange={e => setContent(e.target.value)}
-          className="min-h-20 resize-none border-0 bg-transparent p-0 focus-visible:ring-0"
+          className="min-h-20 resize-none border-0 bg-transparent p-0"
         />
 
         {imageUrls.length > 0 && (

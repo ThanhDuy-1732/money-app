@@ -87,6 +87,13 @@ export default async function ExplorePage({
             </Section>
           )}
 
+          {type === 'users' && searchUsers.length === 0 && (
+            <EmptyState
+              title="Không tìm thấy người dùng"
+              description={`Không có người dùng cho “${q}”.`}
+            />
+          )}
+
           {(type === 'all' || type === 'posts') && (
             <Section
               title={`Bài viết${searchPosts.length > 0 ? ` (${searchPosts.length})` : ''}`}

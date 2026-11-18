@@ -8,11 +8,10 @@ import {
   upsertProduct,
   bulkImportCodes,
 } from '@/features/admin/actions/shop.actions'
+import { FormDialog } from '@/components/FormDialog'
 import {
   Badge,
   Button,
-  Card,
-  CardBody,
   EmptyState,
   Field,
   Input,
@@ -179,33 +178,32 @@ export default async function AdminShopPage({
               </Table>
             )}
 
-            <Card>
-              <CardBody className="pt-4">
-                <form
-                  action={handleUpsertPartner}
-                  className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
-                >
-                  <Field label="Tên đối tác" htmlFor="partner-name">
-                    <Input id="partner-name" name="name" required placeholder="Tên đối tác" />
-                  </Field>
-                  <Field label="Logo URL" htmlFor="partner-logo">
-                    <Input id="partner-logo" name="logo_url" placeholder="https://..." />
-                  </Field>
-                  <div className="flex items-center gap-3 pb-1">
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        name="active"
-                        defaultChecked
-                        className="h-4 w-4 accent-[var(--color-primary)]"
-                      />
-                      Hoạt động
-                    </label>
-                    <Button type="submit">Thêm đối tác</Button>
-                  </div>
-                </form>
-              </CardBody>
-            </Card>
+            <FormDialog
+              trigger="Thêm đối tác"
+              title="Thêm đối tác"
+              description="Tạo đối tác mới cho cửa hàng."
+            >
+              <form action={handleUpsertPartner} className="space-y-3">
+                <Field label="Tên đối tác" htmlFor="partner-name">
+                  <Input id="partner-name" name="name" required placeholder="Tên đối tác" />
+                </Field>
+                <Field label="Logo URL" htmlFor="partner-logo">
+                  <Input id="partner-logo" name="logo_url" placeholder="https://..." />
+                </Field>
+                <div className="flex items-center justify-between gap-3">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      name="active"
+                      defaultChecked
+                      className="h-4 w-4 accent-[var(--color-primary)]"
+                    />
+                    Hoạt động
+                  </label>
+                  <Button type="submit">Thêm đối tác</Button>
+                </div>
+              </form>
+            </FormDialog>
           </div>
         </Section>
       )}
@@ -251,99 +249,103 @@ export default async function AdminShopPage({
               </Table>
             )}
 
-            <Card>
-              <CardBody className="pt-4">
-                <form action={handleUpsertProduct} className="grid gap-3 sm:grid-cols-2">
-                  <Field label="Đối tác" htmlFor="product-partner">
-                    <Select id="product-partner" name="partner_id" required defaultValue="">
-                      <option value="">Chọn đối tác</option>
-                      {partners.map(partner => (
-                        <option key={partner.id} value={partner.id}>
-                          {partner.name}
-                        </option>
-                      ))}
-                    </Select>
-                  </Field>
-                  <Field label="Tên sản phẩm" htmlFor="product-title">
-                    <Input id="product-title" name="title" required placeholder="Tên sản phẩm" />
-                  </Field>
-                  <Field label="Ảnh (URL)" htmlFor="product-image">
-                    <Input id="product-image" name="image_url" placeholder="https://..." />
-                  </Field>
-                  <Field label="Mô tả" htmlFor="product-description">
-                    <Textarea
-                      id="product-description"
-                      name="description"
-                      rows={2}
-                      placeholder="Mô tả ngắn"
+            <FormDialog
+              trigger="Thêm sản phẩm"
+              title="Thêm sản phẩm"
+              description="Tạo sản phẩm mới cho cửa hàng."
+            >
+              <form action={handleUpsertProduct} className="space-y-3">
+                <Field label="Đối tác" htmlFor="product-partner">
+                  <Select id="product-partner" name="partner_id" required defaultValue="">
+                    <option value="">Chọn đối tác</option>
+                    {partners.map(partner => (
+                      <option key={partner.id} value={partner.id}>
+                        {partner.name}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field label="Tên sản phẩm" htmlFor="product-title">
+                  <Input id="product-title" name="title" required placeholder="Tên sản phẩm" />
+                </Field>
+                <Field label="Ảnh (URL)" htmlFor="product-image">
+                  <Input id="product-image" name="image_url" placeholder="https://..." />
+                </Field>
+                <Field label="Mô tả" htmlFor="product-description">
+                  <Textarea
+                    id="product-description"
+                    name="description"
+                    rows={2}
+                    placeholder="Mô tả ngắn"
+                  />
+                </Field>
+                <Field label="Giá điểm" htmlFor="product-points">
+                  <Input
+                    id="product-points"
+                    name="price_points"
+                    type="number"
+                    min="1"
+                    placeholder="200"
+                  />
+                </Field>
+                <Field label="Giá VNĐ" htmlFor="product-vnd">
+                  <Input
+                    id="product-vnd"
+                    name="price_vnd"
+                    type="number"
+                    min="1"
+                    placeholder="19000"
+                  />
+                </Field>
+                <div className="flex items-center justify-between gap-3">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      name="active"
+                      defaultChecked
+                      className="h-4 w-4 accent-[var(--color-primary)]"
                     />
-                  </Field>
-                  <Field label="Giá điểm" htmlFor="product-points">
-                    <Input
-                      id="product-points"
-                      name="price_points"
-                      type="number"
-                      min="1"
-                      placeholder="200"
-                    />
-                  </Field>
-                  <Field label="Giá VNĐ" htmlFor="product-vnd">
-                    <Input
-                      id="product-vnd"
-                      name="price_vnd"
-                      type="number"
-                      min="1"
-                      placeholder="19000"
-                    />
-                  </Field>
-                  <div className="flex items-center gap-3 sm:col-span-2">
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        name="active"
-                        defaultChecked
-                        className="h-4 w-4 accent-[var(--color-primary)]"
-                      />
-                      Đang bán
-                    </label>
-                    <Button type="submit">Thêm sản phẩm</Button>
-                  </div>
-                </form>
-              </CardBody>
-            </Card>
+                    Đang bán
+                  </label>
+                  <Button type="submit">Thêm sản phẩm</Button>
+                </div>
+              </form>
+            </FormDialog>
           </div>
         </Section>
       )}
 
       {tab === 'codes' && (
         <Section title="Nhập mã code">
-          <Card>
-            <CardBody className="pt-4">
-              <form action={handleBulkImport} className="space-y-3">
-                <Field label="Sản phẩm" htmlFor="codes-product">
-                  <Select id="codes-product" name="product_id" required defaultValue="">
-                    <option value="">Chọn sản phẩm</option>
-                    {products.map(product => (
-                      <option key={product.id} value={product.id}>
-                        {product.partner_name} — {product.title}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label="Danh sách mã" htmlFor="codes-text" hint="Mỗi dòng một mã.">
-                  <Textarea
-                    id="codes-text"
-                    name="codes"
-                    rows={6}
-                    required
-                    placeholder={'MÃ-001\nMÃ-002'}
-                    className="font-mono"
-                  />
-                </Field>
-                <Button type="submit">Nhập mã</Button>
-              </form>
-            </CardBody>
-          </Card>
+          <FormDialog
+            trigger="Nhập mã"
+            title="Nhập mã code"
+            description="Dán danh sách mã, mỗi dòng một mã."
+          >
+            <form action={handleBulkImport} className="space-y-3">
+              <Field label="Sản phẩm" htmlFor="codes-product">
+                <Select id="codes-product" name="product_id" required defaultValue="">
+                  <option value="">Chọn sản phẩm</option>
+                  {products.map(product => (
+                    <option key={product.id} value={product.id}>
+                      {product.partner_name} — {product.title}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Danh sách mã" htmlFor="codes-text" hint="Mỗi dòng một mã.">
+                <Textarea
+                  id="codes-text"
+                  name="codes"
+                  rows={6}
+                  required
+                  placeholder={'MÃ-001\nMÃ-002'}
+                  className="font-mono"
+                />
+              </Field>
+              <Button type="submit">Nhập mã</Button>
+            </form>
+          </FormDialog>
         </Section>
       )}
 

@@ -29,9 +29,8 @@ test('only one buyer wins when two race for the last shop code', async () => {
       page2.goto('/shop'),
     ])
 
-    // Find the first product link on each page — skips gracefully if shop is empty
-    const link1 = page1.locator('a[href^="/shop/"]').first()
-    const link2 = page2.locator('a[href^="/shop/"]').first()
+    // Find the first product card on each page — skips gracefully if shop is empty
+    const link1 = page1.getByTestId('shop-card').first()
 
     const hasProduct = await link1.isVisible()
     if (!hasProduct) {
@@ -53,6 +52,12 @@ test('only one buyer wins when two race for the last shop code', async () => {
     await Promise.allSettled([
       buyBtn1.click().catch(() => {}),
       buyBtn2.click().catch(() => {}),
+    ])
+
+    // Confirm the purchase in each dialog
+    await Promise.all([
+      page1.getByRole('button', { name: 'Xác nhận mua' }).click().catch(() => {}),
+      page2.getByRole('button', { name: 'Xác nhận mua' }).click().catch(() => {}),
     ])
 
     // Wait briefly for navigation

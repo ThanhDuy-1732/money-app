@@ -103,14 +103,14 @@ export function AppNav({
 
         <Link
           href="/wallet"
-          className="mb-5 flex items-center gap-3 rounded-xl bg-ink px-3 py-3 text-background"
+          className="mb-5 flex items-center gap-3 rounded-xl border border-inverse-foreground/15 bg-inverse px-3 py-3 text-inverse-foreground"
         >
           <Coin size={36} />
           <span className="min-w-0 leading-tight">
             <span className="block truncate text-base font-bold tabular">
               {balance.toLocaleString('vi-VN')} điểm
             </span>
-            <span className="block text-xs text-background/70">
+            <span className="block text-xs text-inverse-foreground/70">
               <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
               {streak} ngày liên tiếp
             </span>

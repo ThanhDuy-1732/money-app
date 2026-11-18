@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Avatar, Badge, Card, CardBody } from '@/components/ui'
+import { Avatar, Badge, Card, CardBody, EmptyState } from '@/components/ui'
 
 type LeaderboardRow = {
   display_name: string
@@ -18,27 +18,33 @@ export async function ReferralLeaderboard() {
     .limit(10)
 
   const rows = (data ?? []) as LeaderboardRow[]
-  if (rows.length === 0) return null
 
   return (
     <section className="space-y-3">
       <h2 className="text-h3 font-semibold">Bảng xếp hạng giới thiệu</h2>
-      <div className="space-y-2">
-        {rows.map((row, index) => (
-          <Card key={index}>
-            <CardBody className="flex items-center gap-3 py-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
-                {index + 1}
-              </span>
-              <Avatar src={row.avatar_url} fallback={row.display_name} size="sm" />
-              <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                {row.display_name}
-              </span>
-              <Badge variant="coin">{row.total_referrals} người</Badge>
-            </CardBody>
-          </Card>
-        ))}
-      </div>
+      {rows.length === 0 ? (
+        <EmptyState
+          title="Chưa có ai trên bảng xếp hạng"
+          description="Mời bạn bè để xuất hiện ở đây."
+        />
+      ) : (
+        <div className="space-y-2">
+          {rows.map((row, index) => (
+            <Card key={index}>
+              <CardBody className="flex items-center gap-3 py-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+                  {index + 1}
+                </span>
+                <Avatar src={row.avatar_url} fallback={row.display_name} size="sm" />
+                <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                  {row.display_name}
+                </span>
+                <Badge variant="coin">{row.total_referrals} người</Badge>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+      )}
     </section>
   )
 }

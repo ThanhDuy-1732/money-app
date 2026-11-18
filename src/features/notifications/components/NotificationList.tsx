@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { markAllAsRead } from '../actions/notifications.actions'
+import { markAllRead } from '../mark-all'
 import { Button, EmptyState, Segmented } from '@/components/ui'
 import type { Database } from '@/lib/types/database'
 
@@ -66,6 +67,14 @@ export function NotificationList({
 }) {
   const [items, setItems] = useState(initialItems)
   const [activeTab, setActiveTab] = useState('Tất cả')
+  const [marking, setMarking] = useState(false)
+
+  async function handleMarkAll() {
+    setMarking(true)
+    setItems(prev => markAllRead(prev))
+    await markAllAsRead()
+    setMarking(false)
+  }
 
   useEffect(() => {
     const supabase = createClient()
@@ -93,7 +102,7 @@ export function NotificationList({
       <Segmented options={TABS} value={activeTab} onValueChange={setActiveTab} />
 
       <div className="flex justify-end">
-        <Button variant="ghost" size="sm" onClick={() => markAllAsRead()}>
+        <Button variant="ghost" size="sm" onClick={handleMarkAll} loading={marking}>
           Đánh dấu đã đọc
         </Button>
       </div>

@@ -96,7 +96,7 @@ export default async function HomePage() {
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-primary">
                   Điểm khởi đầu
                 </p>
-                <p className="mt-1 font-mono text-[10px] tracking-[0.08em] text-primary/70">
+                <p className="mt-1 font-mono text-[10px] tracking-[0.08em] text-primary">
                   SERI 0050 0001
                 </p>
               </div>
@@ -105,9 +105,9 @@ export default async function HomePage() {
 
             <p className="relative z-10 mt-8 text-[84px] font-extrabold leading-none tracking-[-0.06em] text-primary">
               50
-              <span className="ml-2 text-xl font-bold tracking-normal text-primary/60">điểm</span>
+              <span className="ml-2 text-xl font-bold tracking-normal text-primary">điểm</span>
             </p>
-            <p className="relative z-10 mt-2 text-sm font-semibold text-primary/80">
+            <p className="relative z-10 mt-2 text-sm font-semibold text-primary">
               Khi bạn hoàn tất đăng ký.
             </p>
 
@@ -115,7 +115,7 @@ export default async function HomePage() {
               <span className="rounded-full border border-primary/20 bg-card/50 px-2 py-1 text-[10px] font-bold text-primary">
                 MoneyApp
               </span>
-              <span className="font-mono text-[10px] tracking-[0.08em] text-primary/60">
+              <span className="font-mono text-[10px] tracking-[0.08em] text-primary">
                 POLYMER · VND
               </span>
             </div>
@@ -141,10 +141,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-ink py-16 text-center text-background">
+      <section className="bg-inverse py-16 text-center text-inverse-foreground">
         <div className="mx-auto max-w-xl space-y-5 px-6">
           <h2 className="text-h1 font-extrabold tracking-tight">Bắt đầu với 50 điểm</h2>
-          <p className="text-background/70">Đăng ký miễn phí, không cần thẻ.</p>
+          <p className="text-inverse-foreground/70">Đăng ký miễn phí, không cần thẻ.</p>
           <Button asChild variant="coin" size="lg">
             <Link href="/register">Tạo tài khoản</Link>
           </Button>

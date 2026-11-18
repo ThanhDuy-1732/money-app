@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui'
+import { currentMonthIso } from '@/lib/date'
 
 function prevMonth(month: string): string {
   const [y, m] = month.split('-').map(Number)
@@ -15,14 +16,10 @@ function nextMonth(month: string): string {
   return `${y}-${String(m + 1).padStart(2, '0')}`
 }
 
-function currentMonth(): string {
-  return new Date().toISOString().slice(0, 7)
-}
-
 export function MonthPicker({ month }: { month: string }) {
   const router = useRouter()
   const [y, m] = month.split('-')
-  const isCurrentMonth = month === currentMonth()
+  const isCurrentMonth = month === currentMonthIso()
 
   return (
     <div className="flex items-center gap-1">

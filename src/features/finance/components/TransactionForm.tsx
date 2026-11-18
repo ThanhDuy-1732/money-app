@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Button, Field, Input, Segmented, Select, Textarea } from '@/components/ui'
+import { todayIso } from '@/lib/date'
 
 type Category = { id: string; name: string; icon: string | null; type: string }
 
@@ -58,7 +59,7 @@ export function TransactionForm({
           id="date"
           name="occurred_at"
           type="date"
-          defaultValue={new Date().toISOString().slice(0, 10)}
+          defaultValue={todayIso()}
         />
       </Field>
 

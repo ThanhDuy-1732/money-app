@@ -17,10 +17,12 @@ export function LoadMoreFeed({
   initialCursor,
   userId,
   followingOnly,
+  authorId,
 }: {
   initialCursor: string | null
   userId?: string
   followingOnly: boolean
+  authorId?: string
 }) {
   const [posts, setPosts] = useState<FeedPost[]>([])
   const [cursor, setCursor] = useState(initialCursor)
@@ -31,12 +33,17 @@ export function LoadMoreFeed({
   const loadMore = useCallback(async () => {
     if (!cursor || loading) return
     setLoading(true)
-    const { posts: next, nextCursor } = await fetchFeedPage(cursor, userId ?? null, followingOnly)
+    const { posts: next, nextCursor } = await fetchFeedPage(
+      cursor,
+      userId ?? null,
+      followingOnly,
+      authorId
+    )
     setPosts(prev => [...prev, ...(next as FeedPost[])])
     if (!nextCursor) setDone(true)
     else setCursor(nextCursor)
     setLoading(false)
-  }, [cursor, loading, userId, followingOnly])
+  }, [cursor, loading, userId, followingOnly, authorId])
 
   useEffect(() => {
     if (done) return

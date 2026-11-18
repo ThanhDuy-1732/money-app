@@ -1,5 +1,6 @@
 import { listPosts, hidePost, unhidePost } from '@/features/admin/actions/moderation.actions'
-import { Badge, Button, Card, CardBody, EmptyState, Section } from '@/components/ui'
+import { ConfirmAction } from '@/components/ConfirmAction'
+import { Badge, Card, CardBody, EmptyState, Section } from '@/components/ui'
 
 export default async function AdminPostsPage() {
   const posts = await listPosts()
@@ -26,21 +27,22 @@ export default async function AdminPostsPage() {
                       </Badge>
                     )}
                   </div>
-                  <form
+                  <ConfirmAction
+                    trigger={post.hidden ? 'Hiện lại' : 'Ẩn bài'}
+                    title={post.hidden ? 'Hiện lại bài đăng?' : 'Ẩn bài đăng?'}
+                    description={
+                      post.hidden
+                        ? 'Bài đăng sẽ hiển thị lại trong feed.'
+                        : 'Bài đăng sẽ bị ẩn khỏi feed và trang cá nhân.'
+                    }
+                    confirmLabel={post.hidden ? 'Hiện lại' : 'Ẩn bài'}
                     action={
                       post.hidden
                         ? unhidePost.bind(null, post.id)
                         : hidePost.bind(null, post.id)
                     }
-                  >
-                    <Button
-                      type="submit"
-                      size="sm"
-                      variant={post.hidden ? 'outline' : 'destructive'}
-                    >
-                      {post.hidden ? 'Hiện lại' : 'Ẩn bài'}
-                    </Button>
-                  </form>
+                    variant={post.hidden ? 'outline' : 'destructive'}
+                  />
                 </CardBody>
               </Card>
             ))}

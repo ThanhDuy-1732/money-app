@@ -31,6 +31,11 @@
   --security-1: #7bd3b0;
   --security-2: #f0b429;
   --security-3: #e86b8f;
+  /* Fixed dark veil for modal/sheet overlays; does not invert in dark mode. */
+  --overlay: rgb(11 21 18 / 0.55);
+  /* Fixed brand surface for auth/landing/sidebar notes; stays dark in both themes. */
+  --inverse: #10231c;
+  --inverse-foreground: #f7faf7;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -95,6 +100,9 @@
   --color-security-1: var(--security-1);
   --color-security-2: var(--security-2);
   --color-security-3: var(--security-3);
+  --color-overlay: var(--overlay);
+  --color-inverse: var(--inverse);
+  --color-inverse-foreground: var(--inverse-foreground);
 
   --font-sans: var(--font-be-vietnam), system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;

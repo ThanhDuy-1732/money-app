@@ -19,10 +19,14 @@ import type { Database } from '@/lib/types/database'
 type Reward = Database['public']['Tables']['rewards']['Row']
 
 export function RedeemCard({ reward, userBalance }: { reward: Reward; userBalance: number }) {
+  const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  const soldOut = reward.stock === 0
   const canAfford = userBalance >= reward.points_cost
+  const canRedeem = canAfford && !soldOut
   const remaining = userBalance - reward.points_cost
 
   async function handleRedeem() {
@@ -35,7 +39,17 @@ export function RedeemCard({ reward, userBalance }: { reward: Reward; userBalanc
       return
     }
     setSuccess(true)
+    setOpen(false)
   }
+
+  const errorBanner = error ? (
+    <p
+      role="alert"
+      className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs font-medium text-destructive"
+    >
+      {error}
+    </p>
+  ) : null
 
   return (
     <Card data-testid="redeem-card">
@@ -47,8 +61,12 @@ export function RedeemCard({ reward, userBalance }: { reward: Reward; userBalanc
               <p className="mt-1 text-xs text-muted-foreground">{reward.description}</p>
             )}
           </div>
-          <Badge variant={canAfford ? 'coin' : 'neutral'}>
-            <Amount value={reward.points_cost} kind="points" tone={canAfford ? 'coin' : 'default'} />
+          <Badge variant={canRedeem ? 'coin' : 'neutral'}>
+            <Amount
+              value={reward.points_cost}
+              kind="points"
+              tone={canRedeem ? 'coin' : 'default'}
+            />
           </Badge>
         </div>
 
@@ -56,34 +74,29 @@ export function RedeemCard({ reward, userBalance }: { reward: Reward; userBalanc
           <p className="text-[11px] text-muted-foreground">Còn {reward.stock} lượt</p>
         )}
 
-        {error && (
-          <p
-            role="alert"
-            className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs font-medium text-destructive"
-          >
-            {error}
-          </p>
-        )}
+        {errorBanner}
 
         {success ? (
           <Badge variant="leaf">Đã đổi thành công</Badge>
         ) : (
-          <Dialog>
+          <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button
                 size="sm"
-                variant={canAfford ? 'default' : 'outline'}
-                disabled={!canAfford}
+                variant={canRedeem ? 'default' : 'outline'}
+                disabled={!canRedeem}
                 className="w-full"
               >
-                {canAfford ? 'Đổi ngay' : 'Không đủ điểm'}
+                {soldOut ? 'Hết lượt' : canAfford ? 'Đổi ngay' : 'Không đủ điểm'}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogTitle className="text-h3 font-semibold">Đổi “{reward.name}”?</DialogTitle>
               <DialogDescription className="mt-1 text-sm text-muted-foreground">
-                Bạn sẽ dùng {reward.points_cost} điểm. Số dư còn lại: {remaining} điểm.
+                Bạn sẽ dùng {reward.points_cost.toLocaleString('vi-VN')} điểm. Số dư còn lại:{' '}
+                {remaining.toLocaleString('vi-VN')} điểm.
               </DialogDescription>
+              {errorBanner}
               <div className="mt-4 flex justify-end gap-2">
                 <DialogClose asChild>
                   <Button variant="ghost">Hủy</Button>

@@ -31,12 +31,28 @@ export default async function AdminDashboard() {
   return (
     <div data-testid="admin-dashboard" className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Stat label="Nạp điểm (VNPay)" value={<Amount value={summary.topup} kind="vnd" />} />
-        <Stat label="Premium" value={<Amount value={summary.subscription} kind="vnd" />} />
-        <Stat label="Shop VNPay" value={<Amount value={summary.shop} kind="vnd" />} />
+        <Stat
+          label="Nạp điểm (VNPay)"
+          value={<Amount value={summary.topup} kind="vnd" size="stat" />}
+        />
+        <Stat
+          label="Premium"
+          value={<Amount value={summary.subscription} kind="vnd" size="stat" />}
+        />
+        <Stat
+          label="Shop VNPay"
+          value={<Amount value={summary.shop} kind="vnd" size="stat" />}
+        />
         <Stat
           label="Tổng doanh thu"
-          value={<Amount value={summary.topup + summary.subscription + summary.shop} kind="vnd" tone="leaf" />}
+          value={
+            <Amount
+              value={summary.topup + summary.subscription + summary.shop}
+              kind="vnd"
+              tone="leaf"
+              size="stat"
+            />
+          }
         />
         <Stat label="Sub đang hoạt động" value={summary.activeSubscriptions} />
       </div>

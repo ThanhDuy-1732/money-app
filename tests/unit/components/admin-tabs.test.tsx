@@ -9,6 +9,7 @@ describe('AdminTabs', () => {
   it('marks the current tab and links all sections', () => {
     const html = renderToStaticMarkup(<AdminTabs />)
     expect(html).toContain('Người dùng')
-    expect(html).toContain('aria-current="page"')
+    const activeTabs = html.match(/aria-current="page"/g) ?? []
+    expect(activeTabs).toHaveLength(1)
   })
 })

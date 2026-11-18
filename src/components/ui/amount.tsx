@@ -7,6 +7,7 @@ const amountSizes = {
   md: 'text-sm font-semibold',
   lg: 'text-h3 font-bold',
   xl: 'text-h1 font-extrabold',
+  stat: 'text-h2 font-bold',
 } as const
 
 const amountTones = {

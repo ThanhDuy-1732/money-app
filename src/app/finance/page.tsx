@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { listTransactions } from '@/features/finance/transaction.actions'
 import { MonthPicker } from '@/features/finance/components/MonthPicker'
 import { getSubscriptionStatus } from '@/features/billing/subscription.actions'
+import { currentMonthIso } from '@/lib/date'
 import {
   Amount,
   Button,
@@ -14,10 +15,6 @@ import {
   Serial,
   Stat,
 } from '@/components/ui'
-
-function currentMonth(): string {
-  return new Date().toISOString().slice(0, 7)
-}
 
 function isValidMonth(s: string): boolean {
   return /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
@@ -43,7 +40,7 @@ export default async function FinancePage({
 
   const { month: rawMonth } = await searchParams
   const month =
-    typeof rawMonth === 'string' && isValidMonth(rawMonth) ? rawMonth : currentMonth()
+    typeof rawMonth === 'string' && isValidMonth(rawMonth) ? rawMonth : currentMonthIso()
 
   const [{ transactions, totalIncome, totalExpense }, { isPremium }] = await Promise.all([
     listTransactions(month),
@@ -81,15 +78,19 @@ export default async function FinancePage({
         }
       />
 
-      <div data-testid="finance-summary" className="grid grid-cols-2 gap-4">
+      <div data-testid="finance-summary" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Stat
           label="Thu nhập"
-          value={<Amount value={totalIncome} kind="vnd" sign="plus" tone="leaf" />}
+          value={
+            <Amount value={totalIncome} kind="vnd" sign="plus" tone="leaf" size="stat" />
+          }
           delta={`Tháng ${monthLabel}`}
         />
         <Stat
           label="Chi tiêu"
-          value={<Amount value={totalExpense} kind="vnd" sign="minus" tone="lotus" />}
+          value={
+            <Amount value={totalExpense} kind="vnd" sign="minus" tone="lotus" size="stat" />
+          }
           delta={`Tháng ${monthLabel}`}
         />
       </div>
@@ -121,7 +122,7 @@ export default async function FinancePage({
                       />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">
+                      <p className="line-clamp-2 break-words text-sm font-semibold">
                         {row.categories?.name ?? 'Không phân loại'}
                       </p>
                       {row.note && (

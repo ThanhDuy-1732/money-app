@@ -22,7 +22,7 @@ export function Sheet({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-ink/40 backdrop-blur-[2px]" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-overlay backdrop-blur-[2px]" />
         <DialogPrimitive.Content
           className={cn(
             'fixed z-50 border border-border bg-card p-5 text-card-foreground shadow-sheet focus:outline-none',

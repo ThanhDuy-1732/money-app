@@ -102,7 +102,7 @@ export default async function PublicProfilePage({
       </div>
 
       <div className="mt-6">
-        <FeedList userId={profile.id} />
+        <FeedList userId={user?.id} authorId={profile.id} />
       </div>
     </main>
   )

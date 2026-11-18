@@ -1,7 +1,7 @@
 import { listUsers, lockUser, unlockUser } from '@/features/admin/actions/moderation.actions'
+import { ConfirmAction } from '@/components/ConfirmAction'
 import {
   Badge,
-  Button,
   EmptyState,
   Section,
   Table,
@@ -52,21 +52,26 @@ export default async function AdminUsersPage() {
                   </TD>
                   <TD className="text-right">
                     {user.role !== 'admin' && (
-                      <form
+                      <ConfirmAction
+                        trigger={user.locked ? 'Mở khóa' : 'Khóa'}
+                        title={
+                          user.locked
+                            ? `Mở khóa ${user.display_name}?`
+                            : `Khóa ${user.display_name}?`
+                        }
+                        description={
+                          user.locked
+                            ? 'Người dùng sẽ có thể đăng nhập lại.'
+                            : 'Người dùng sẽ bị đăng xuất và không thể truy cập.'
+                        }
+                        confirmLabel={user.locked ? 'Mở khóa' : 'Khóa'}
                         action={
                           user.locked
                             ? unlockUser.bind(null, user.id)
                             : lockUser.bind(null, user.id)
                         }
-                      >
-                        <Button
-                          type="submit"
-                          size="sm"
-                          variant={user.locked ? 'outline' : 'destructive'}
-                        >
-                          {user.locked ? 'Mở khóa' : 'Khóa'}
-                        </Button>
-                      </form>
+                        variant={user.locked ? 'outline' : 'destructive'}
+                      />
                     )}
                   </TD>
                 </TR>

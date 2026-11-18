@@ -51,7 +51,8 @@ const FEED_PAGE_SIZE = 10
 export async function fetchFeedPage(
   cursor: string | null,
   userId: string | null,
-  followingOnly: boolean
+  followingOnly: boolean,
+  authorId?: string
 ) {
   const supabase = await createClient()
 
@@ -62,7 +63,7 @@ export async function fetchFeedPage(
   `
 
   let ids: string[] | null = null
-  if (followingOnly && userId) {
+  if (!authorId && followingOnly && userId) {
     const { data: following } = await supabase
       .from('follows')
       .select('following_id')
@@ -70,7 +71,7 @@ export async function fetchFeedPage(
     ids = [userId, ...(following?.map(f => f.following_id) ?? [])]
   }
 
-  const q = supabase
+  let query = supabase
     .from('posts')
     .select(baseSelect)
     .is('deleted_at', null)
@@ -78,11 +79,11 @@ export async function fetchFeedPage(
     .order('created_at', { ascending: false })
     .limit(FEED_PAGE_SIZE)
 
-  // Apply filters inline on one query to avoid TS inference narrowing to never
-  const { data: rawPosts } = await (ids
-    ? (cursor ? q.in('user_id', ids).lt('created_at', cursor) : q.in('user_id', ids))
-    : (cursor ? q.lt('created_at', cursor) : q)
-  )
+  if (authorId) query = query.eq('user_id', authorId)
+  else if (ids) query = query.in('user_id', ids)
+  if (cursor) query = query.lt('created_at', cursor)
+
+  const { data: rawPosts } = await query
 
   const posts = (rawPosts ?? []) as Array<Record<string, unknown> & { created_at: string }>
   const nextCursor = posts.length === FEED_PAGE_SIZE ? posts[posts.length - 1].created_at : null

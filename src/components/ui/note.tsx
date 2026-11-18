@@ -38,7 +38,7 @@ export function Note({
             <Coin key={points} size={22} flip />
             <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-primary">Số dư điểm</p>
           </div>
-          <Serial value={serial ?? '0042 8817'} label="SỐ VÍ" className="mt-1 text-primary/70" />
+          <Serial value={serial ?? '0042 8817'} label="SỐ VÍ" className="mt-1 text-primary" />
         </div>
         {typeof streak === 'number' && (
           <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-card/50 px-2 py-1 text-[10px] font-bold text-primary">
@@ -53,7 +53,7 @@ export function Note({
         className="relative z-10 mt-5 text-[46px] font-extrabold leading-none tracking-[-0.045em] text-primary"
       >
         {points.toLocaleString('vi-VN')}
-        <span className="ml-2 text-base font-bold tracking-normal text-primary/60">điểm</span>
+        <span className="ml-2 text-base font-bold tracking-normal text-primary">điểm</span>
       </p>
 
       <div className="relative z-10 mt-4 flex items-end justify-between gap-3">
@@ -64,7 +64,7 @@ export function Note({
         ) : (
           <span />
         )}
-        <span className="font-mono text-[10px] tracking-[0.08em] text-primary/60">POLYMER · VND</span>
+        <span className="font-mono text-[10px] tracking-[0.08em] text-primary">POLYMER · VND</span>
       </div>
     </div>
   )

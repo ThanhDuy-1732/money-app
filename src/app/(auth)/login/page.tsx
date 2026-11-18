@@ -5,17 +5,17 @@ import { Note } from '@/components/ui'
 export default function LoginPage() {
   return (
     <div className="grid min-h-screen md:grid-cols-2">
-      <aside className="hidden flex-col justify-between bg-ink p-10 text-background md:flex">
+      <aside className="hidden flex-col justify-between bg-inverse p-10 text-inverse-foreground md:flex">
         <Link href="/" className="text-xl font-extrabold tracking-tight">
           MoneyApp
         </Link>
         <div className="space-y-5">
           <Note points={50} serial="0050 0001" rank="Điểm khởi đầu" />
-          <p className="max-w-sm text-sm text-background/70">
+          <p className="max-w-sm text-sm text-inverse-foreground/70">
             Ví của bạn, có điểm thưởng. Ghi chi tiêu, giữ streak và đổi quà.
           </p>
         </div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-background/50">
+        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-inverse-foreground/50">
           Polymer Ledger
         </p>
       </aside>

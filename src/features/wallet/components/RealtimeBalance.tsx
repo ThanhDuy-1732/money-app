@@ -37,5 +37,5 @@ export function RealtimeBalance({
     return () => { supabase.removeChannel(channel) }
   }, [userId])
 
-  return <BalanceCard balance={balance} streak={streak} />
+  return <BalanceCard balance={balance} streak={streak} userId={userId} />
 }

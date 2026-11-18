@@ -16,7 +16,9 @@ export function AdminTabs() {
   return (
     <nav className="flex gap-1 overflow-x-auto border-b border-border">
       {TABS.map(tab => {
-        const active = pathname === tab.href || pathname.startsWith(tab.href + '/')
+        const active =
+          pathname === tab.href ||
+          (tab.href !== '/admin' && pathname.startsWith(tab.href + '/'))
         return (
           <Link
             key={tab.href}

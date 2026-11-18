@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { TriangleAlert } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { listBudgets, getBudgetProgress } from '@/features/finance/budget.actions'
+import { currentMonthIso } from '@/lib/date'
 import {
   Amount,
   Badge,
@@ -26,7 +27,7 @@ export default async function BudgetsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const month = new Date().toISOString().slice(0, 7)
+  const month = currentMonthIso()
   const budgets = await listBudgets(month)
   const withProgress = await Promise.all(
     budgets.map(async b => {

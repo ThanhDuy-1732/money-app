@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import { getProduct, purchaseWithPoints } from '@/features/shop/actions/shop.actions'
-import { Button, Card, CardBody, PageHeader } from '@/components/ui'
+import { PurchaseDialog } from '@/features/shop/components/PurchaseDialog'
+import { Card, CardBody, PageHeader } from '@/components/ui'
 
 export default async function ProductPage({
   params,
@@ -13,6 +15,12 @@ export default async function ProductPage({
   const { error } = await searchParams
   const product = await getProduct(id)
   if (!product) redirect('/shop')
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = user
+    ? await supabase.from('profiles').select('points_balance').eq('id', user.id).single()
+    : { data: null }
 
   async function handleBuyWithPoints() {
     'use server'
@@ -54,11 +62,12 @@ export default async function ProductPage({
       <Card>
         <CardBody className="space-y-3 pt-4">
           {product.price_points && (
-            <form action={handleBuyWithPoints}>
-              <Button type="submit" variant="coin" fullWidth>
-                Mua bằng {product.price_points.toLocaleString('vi-VN')} điểm
-              </Button>
-            </form>
+            <PurchaseDialog
+              title={product.title ?? 'Sản phẩm'}
+              pricePoints={product.price_points}
+              userBalance={profile?.points_balance ?? 0}
+              action={handleBuyWithPoints}
+            />
           )}
           {product.price_vnd && (
             <p className="text-center text-sm text-muted-foreground">

@@ -16,11 +16,13 @@ type FeedPost = Database['public']['Tables']['posts']['Row'] & {
 export async function FeedList({
   userId,
   followingOnly = false,
+  authorId,
 }: {
   userId?: string
   followingOnly?: boolean
+  authorId?: string
 }) {
-  const { posts, nextCursor } = await fetchFeedPage(null, userId ?? null, followingOnly)
+  const { posts, nextCursor } = await fetchFeedPage(null, userId ?? null, followingOnly, authorId)
 
   if (!posts.length) {
     return (
@@ -36,7 +38,14 @@ export async function FeedList({
       {(posts as FeedPost[]).map(post => (
         <PostCard key={post.id} post={post} currentUserId={userId} />
       ))}
-      {userId && <LoadMoreFeed initialCursor={nextCursor} userId={userId} followingOnly={followingOnly} />}
+      {userId && (
+        <LoadMoreFeed
+          initialCursor={nextCursor}
+          userId={userId}
+          followingOnly={followingOnly}
+          authorId={authorId}
+        />
+      )}
     </div>
   )
 }
