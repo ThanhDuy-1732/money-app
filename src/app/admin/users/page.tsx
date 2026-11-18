@@ -1,45 +1,80 @@
 import { listUsers, lockUser, unlockUser } from '@/features/admin/actions/moderation.actions'
+import {
+  Badge,
+  Button,
+  EmptyState,
+  Section,
+  Table,
+  TBody,
+  TD,
+  TH,
+  THead,
+  TR,
+} from '@/components/ui'
 
 export default async function AdminUsersPage() {
   const users = await listUsers()
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold">Người dùng ({users.length})</h1>
-      <div className="border rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800">
-            <tr>
-              <th className="text-left p-3">Tên</th>
-              <th className="text-left p-3">Username</th>
-              <th className="text-right p-3">Điểm</th>
-              <th className="text-left p-3">Role</th>
-              <th className="text-left p-3">Trạng thái</th>
-              <th className="p-3"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {users.map(u => (
-              <tr key={u.id} className={u.locked ? 'opacity-50' : ''}>
-                <td className="p-3">{u.display_name}</td>
-                <td className="p-3 text-gray-500">@{u.username}</td>
-                <td className="p-3 text-right">{u.points_balance}</td>
-                <td className="p-3">{u.role}</td>
-                <td className="p-3">{u.locked ? '🔒 Khoá' : '✅ Hoạt động'}</td>
-                <td className="p-3">
-                  {u.role !== 'admin' && (
-                    <form action={u.locked ? unlockUser.bind(null, u.id) : lockUser.bind(null, u.id)}>
-                      <button className="text-xs text-red-600 hover:underline">
-                        {u.locked ? 'Mở khoá' : 'Khoá'}
-                      </button>
-                    </form>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div data-testid="admin-users" className="space-y-4">
+      <Section title={`Người dùng (${users.length})`}>
+        {users.length === 0 ? (
+          <EmptyState title="Chưa có người dùng" description="Người dùng sẽ xuất hiện ở đây." />
+        ) : (
+          <Table>
+            <THead>
+              <TR>
+                <TH>Tên</TH>
+                <TH>Username</TH>
+                <TH className="text-right">Điểm</TH>
+                <TH>Vai trò</TH>
+                <TH>Trạng thái</TH>
+                <TH />
+              </TR>
+            </THead>
+            <TBody>
+              {users.map(user => (
+                <TR key={user.id} className={user.locked ? 'opacity-60' : ''}>
+                  <TD className="font-medium">{user.display_name}</TD>
+                  <TD className="text-muted-foreground">@{user.username ?? '—'}</TD>
+                  <TD className="text-right tabular">
+                    {user.points_balance.toLocaleString('vi-VN')}
+                  </TD>
+                  <TD>
+                    <Badge variant={user.role === 'admin' ? 'premium' : 'neutral'}>
+                      {user.role === 'admin' ? 'Quản trị' : 'Người dùng'}
+                    </Badge>
+                  </TD>
+                  <TD>
+                    <Badge variant={user.locked ? 'lotus' : 'leaf'}>
+                      {user.locked ? 'Đã khóa' : 'Hoạt động'}
+                    </Badge>
+                  </TD>
+                  <TD className="text-right">
+                    {user.role !== 'admin' && (
+                      <form
+                        action={
+                          user.locked
+                            ? unlockUser.bind(null, user.id)
+                            : lockUser.bind(null, user.id)
+                        }
+                      >
+                        <Button
+                          type="submit"
+                          size="sm"
+                          variant={user.locked ? 'outline' : 'destructive'}
+                        >
+                          {user.locked ? 'Mở khóa' : 'Khóa'}
+                        </Button>
+                      </form>
+                    )}
+                  </TD>
+                </TR>
+              ))}
+            </TBody>
+          </Table>
+        )}
+      </Section>
     </div>
   )
 }

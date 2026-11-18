@@ -1,26 +1,52 @@
 import { listPosts, hidePost, unhidePost } from '@/features/admin/actions/moderation.actions'
+import { Badge, Button, Card, CardBody, EmptyState, Section } from '@/components/ui'
 
 export default async function AdminPostsPage() {
   const posts = await listPosts()
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-bold">Bài đăng ({posts.length})</h1>
-      <div className="space-y-2">
-        {posts.map(p => (
-          <div key={p.id} className={`border rounded-xl p-4 flex justify-between items-start gap-4 ${p.hidden ? 'opacity-50' : ''}`}>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-gray-400 mb-1">{(p.profiles as any)?.display_name} · {new Date(p.created_at).toLocaleString('vi-VN')}</p>
-              <p className="text-sm line-clamp-2">{p.content}</p>
-            </div>
-            <form action={p.hidden ? unhidePost.bind(null, p.id) : hidePost.bind(null, p.id)}>
-              <button className="text-xs text-red-600 hover:underline shrink-0">
-                {p.hidden ? 'Hiện lại' : 'Ẩn bài'}
-              </button>
-            </form>
+    <div data-testid="admin-posts" className="space-y-4">
+      <Section title={`Bài đăng (${posts.length})`}>
+        {posts.length === 0 ? (
+          <EmptyState title="Chưa có bài đăng" description="Bài đăng sẽ xuất hiện ở đây." />
+        ) : (
+          <div className="space-y-2">
+            {posts.map(post => (
+              <Card key={post.id} className={post.hidden ? 'opacity-60' : ''}>
+                <CardBody className="flex items-start justify-between gap-4 pt-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-muted-foreground">
+                      {(post.profiles as { display_name: string } | null)?.display_name} ·{' '}
+                      {new Date(post.created_at).toLocaleString('vi-VN')}
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-sm">{post.content}</p>
+                    {post.hidden && (
+                      <Badge variant="lotus" className="mt-2">
+                        Đã ẩn
+                      </Badge>
+                    )}
+                  </div>
+                  <form
+                    action={
+                      post.hidden
+                        ? unhidePost.bind(null, post.id)
+                        : hidePost.bind(null, post.id)
+                    }
+                  >
+                    <Button
+                      type="submit"
+                      size="sm"
+                      variant={post.hidden ? 'outline' : 'destructive'}
+                    >
+                      {post.hidden ? 'Hiện lại' : 'Ẩn bài'}
+                    </Button>
+                  </form>
+                </CardBody>
+              </Card>
+            ))}
           </div>
-        ))}
-      </div>
+        )}
+      </Section>
     </div>
   )
 }
