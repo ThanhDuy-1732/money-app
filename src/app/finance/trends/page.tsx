@@ -1,38 +1,84 @@
+import Link from 'next/link'
 import { getFinanceTrend } from '@/features/finance/actions/trend.actions'
 import { TrendChart } from '@/features/finance/components/TrendChart'
-import Link from 'next/link'
+import { Amount, Button, Card, CardBody, PageHeader, Stat, Stamp } from '@/components/ui'
 
 export default async function TrendsPage() {
   const result = await getFinanceTrend(6)
 
   if ('error' in result && result.error === 'premium_required') {
     return (
-      <div className="p-6 text-center">
-        <h1 className="text-xl font-bold mb-2">Phân tích xu hướng</h1>
-        <p className="text-zinc-500 mb-4">Tính năng này chỉ dành cho thành viên Premium.</p>
-        <Link href="/billing/upgrade" className="rounded-lg bg-yellow-500 px-4 py-2 text-sm font-medium text-white">
-          Nâng cấp Premium
-        </Link>
-      </div>
+      <main className="mx-auto max-w-narrow space-y-6 px-4 py-6">
+        <PageHeader
+          title="Xu hướng tài chính"
+          description="Phân tích thu chi 6 tháng."
+          backHref="/finance"
+        />
+        <Card tone="coin" className="relative overflow-hidden">
+          <CardBody className="space-y-4 pt-5 text-center">
+            <div className="flex justify-center">
+              <Stamp status="Premium" tone="coin" />
+            </div>
+            <h2 className="text-h2 font-extrabold tracking-tight">
+              Mở khóa xu hướng tài chính
+            </h2>
+            <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+              Xem thu chi 6 tháng, tiết kiệm ròng và xu hướng của bạn.
+            </p>
+            <Button asChild variant="coin">
+              <Link href="/billing/upgrade">Nâng cấp Premium</Link>
+            </Button>
+          </CardBody>
+        </Card>
+      </main>
     )
   }
 
   if ('error' in result) {
-    return <p className="p-6 text-red-500">Lỗi: {result.error}</p>
+    return (
+      <main className="mx-auto max-w-narrow space-y-6 px-4 py-6">
+        <PageHeader title="Xu hướng tài chính" backHref="/finance" />
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm font-medium text-destructive"
+        >
+          {result.error}
+        </p>
+      </main>
+    )
   }
 
-  const netTotal = result.reduce((s, r) => s + r.net, 0)
+  const netTotal = result.reduce((sum, row) => sum + row.net, 0)
 
   return (
-    <div className="p-4 space-y-6">
-      <h1 className="text-xl font-bold">Xu hướng tài chính (6 tháng)</h1>
-      <TrendChart data={result} />
-      <div className="rounded-lg border p-4">
-        <p className="text-sm text-zinc-500">Tiết kiệm ròng (6 tháng)</p>
-        <p className={`text-2xl font-bold ${netTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(netTotal)}
-        </p>
+    <main className="mx-auto max-w-wide space-y-6 px-4 py-6">
+      <PageHeader
+        title="Xu hướng tài chính"
+        description="6 tháng gần nhất."
+        backHref="/finance"
+      />
+
+      <Card>
+        <CardBody className="pt-4">
+          <TrendChart data={result} />
+        </CardBody>
+      </Card>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Stat
+          label="Tiết kiệm ròng (6 tháng)"
+          value={
+            <Amount
+              value={netTotal}
+              kind="vnd"
+              sign={netTotal >= 0 ? 'plus' : 'minus'}
+              tone={netTotal >= 0 ? 'leaf' : 'lotus'}
+              size="lg"
+            />
+          }
+        />
+        <Stat label="Số tháng có dữ liệu" value={result.length} />
       </div>
-    </div>
+    </main>
   )
 }

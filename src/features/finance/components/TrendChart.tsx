@@ -1,37 +1,82 @@
-import type { TrendRow } from '@/features/finance/actions/trend.actions'
 import dayjs from 'dayjs'
+import { EmptyState } from '@/components/ui'
+import type { TrendRow } from '@/features/finance/actions/trend.actions'
 
-export function TrendChart({ data }: { data: TrendRow[] }) {
-  if (data.length === 0)
-    return <p className="text-zinc-500 text-sm">Chưa có giao dịch nào trong 6 tháng qua.</p>
+export function TrendChart({
+  data,
+}: {
+  data: Pick<TrendRow, 'month' | 'total_income' | 'total_expense'>[]
+}) {
+  if (data.length === 0) {
+    return (
+      <EmptyState
+        title="Chưa có dữ liệu"
+        description="Thêm giao dịch để xem xu hướng 6 tháng."
+      />
+    )
+  }
 
-  const maxVal = Math.max(...data.flatMap(r => [r.total_income, r.total_expense]), 1)
-  const barW = 24
-  const gap = 12
+  const maxVal = Math.max(...data.flatMap(row => [row.total_income, row.total_expense]), 1)
+  const barW = 18
+  const gap = 10
+  const groupW = barW * 2 + gap + 16
   const chartH = 120
-  const totalW = data.length * (barW * 2 + gap + 8)
+  const totalW = Math.max(data.length * groupW, 320)
 
   return (
-    <div className="overflow-x-auto">
-      <svg width={totalW} height={chartH + 40} className="block">
-        {data.map((row, i) => {
-          const x = i * (barW * 2 + gap + 8)
-          const incH = (row.total_income / maxVal) * chartH
-          const expH = (row.total_expense / maxVal) * chartH
+    <div data-testid="trend-chart">
+      <svg
+        viewBox={`0 0 ${totalW} ${chartH + 32}`}
+        className="h-auto w-full"
+        role="img"
+        aria-label="Xu hướng thu chi 6 tháng"
+      >
+        {data.map((row, index) => {
+          const x = index * groupW + 8
+          const incomeH = (row.total_income / maxVal) * chartH
+          const expenseH = (row.total_expense / maxVal) * chartH
           return (
             <g key={row.month}>
-              <rect x={x} y={chartH - incH} width={barW} height={incH} fill="#22c55e" rx={2} />
-              <rect x={x + barW + 4} y={chartH - expH} width={barW} height={expH} fill="#ef4444" rx={2} />
-              <text x={x + barW} y={chartH + 16} textAnchor="middle" fontSize={10} fill="currentColor">
+              <rect
+                x={x}
+                y={chartH - incomeH}
+                width={barW}
+                height={incomeH}
+                rx={3}
+                style={{ fill: 'var(--color-leaf)' }}
+              />
+              <rect
+                x={x + barW + 4}
+                y={chartH - expenseH}
+                width={barW}
+                height={expenseH}
+                rx={3}
+                style={{ fill: 'var(--color-lotus)' }}
+              />
+              <text
+                x={x + barW}
+                y={chartH + 18}
+                textAnchor="middle"
+                fontSize={10}
+                fill="currentColor"
+                className="text-muted-foreground"
+              >
                 {dayjs(row.month).format('MM/YY')}
               </text>
             </g>
           )
         })}
       </svg>
-      <div className="mt-2 flex gap-4 text-xs text-zinc-500">
-        <span><span className="inline-block w-3 h-3 bg-green-500 rounded-sm mr-1" />Thu nhập</span>
-        <span><span className="inline-block w-3 h-3 bg-red-500 rounded-sm mr-1" />Chi tiêu</span>
+
+      <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-sm bg-leaf" />
+          Thu nhập
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-sm bg-lotus" />
+          Chi tiêu
+        </span>
       </div>
     </div>
   )
