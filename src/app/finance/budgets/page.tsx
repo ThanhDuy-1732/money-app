@@ -1,6 +1,25 @@
 import { redirect } from 'next/navigation'
+import { TriangleAlert } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { listBudgets, getBudgetProgress } from '@/features/finance/budget.actions'
+import {
+  Amount,
+  Badge,
+  Card,
+  CardBody,
+  CategoryIcon,
+  EmptyState,
+  PageHeader,
+  Progress,
+} from '@/components/ui'
+
+type BudgetWithProgress = {
+  id: string
+  limit_amount: number
+  categories: { name: string; icon: string | null } | null
+  spent: number
+  pct: number
+}
 
 export default async function BudgetsPage() {
   const supabase = await createClient()
@@ -16,33 +35,78 @@ export default async function BudgetsPage() {
     })
   )
 
+  const rows = withProgress as BudgetWithProgress[]
+  const monthLabel = new Date(`${month}-01`).toLocaleDateString('vi-VN', {
+    month: '2-digit',
+    year: 'numeric',
+  })
+
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-      <h1 className="text-xl font-bold">Ngân sách tháng {month}</h1>
-      {withProgress.length === 0 && (
-        <p className="text-center text-gray-400 py-8">Chưa có ngân sách nào.</p>
-      )}
-      {withProgress.map((b: any) => (
-        <div key={b.id} className="border rounded-xl p-4 space-y-2">
-          <div className="flex justify-between">
-            <span>{b.categories?.icon} {b.categories?.name}</span>
-            <span className="text-sm text-gray-500">
-              {b.spent.toLocaleString('vi-VN')}đ / {b.limit_amount.toLocaleString('vi-VN')}đ
-            </span>
-          </div>
-          <div className="w-full bg-gray-100 rounded-full h-2">
-            <div
-              className={`h-2 rounded-full ${b.pct >= 100 ? 'bg-red-500' : b.pct >= 80 ? 'bg-yellow-400' : 'bg-green-500'}`}
-              style={{ width: `${b.pct}%` }}
-            />
-          </div>
-          {b.pct >= 80 && (
-            <p className="text-xs text-red-500">
-              {b.pct >= 100 ? '⚠️ Đã vượt ngân sách!' : '⚠️ Sắp đạt giới hạn'}
-            </p>
-          )}
+    <main className="mx-auto max-w-default space-y-6 px-4 py-6">
+      <PageHeader
+        title="Ngân sách"
+        description={`Tháng ${monthLabel}`}
+        backHref="/finance"
+      />
+
+      {rows.length === 0 ? (
+        <EmptyState
+          title="Chưa có ngân sách"
+          description="Ngân sách của bạn sẽ xuất hiện ở đây khi được thiết lập."
+        />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {rows.map(budget => {
+            const remaining = Math.max(budget.limit_amount - budget.spent, 0)
+            const tone = budget.pct >= 100 ? 'lotus' : budget.pct >= 80 ? 'coin' : 'leaf'
+
+            return (
+              <Card key={budget.id} data-testid="budget-card">
+                <CardBody className="space-y-3 pt-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <CategoryIcon
+                        icon={budget.categories?.icon ?? null}
+                        className="h-4 w-4 text-primary"
+                      />
+                      <p className="font-semibold">
+                        {budget.categories?.name ?? 'Không phân loại'}
+                      </p>
+                    </div>
+                    <Badge variant={tone}>{budget.pct.toFixed(0)}%</Badge>
+                  </div>
+
+                  <Progress value={budget.pct} tone={tone} />
+
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Đã chi</span>
+                    <Amount value={budget.spent} kind="vnd" />
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Hạn mức</span>
+                    <Amount value={budget.limit_amount} kind="vnd" />
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Còn lại</span>
+                    <Amount
+                      value={remaining}
+                      kind="vnd"
+                      tone={budget.pct >= 100 ? 'lotus' : 'leaf'}
+                    />
+                  </div>
+
+                  {budget.pct >= 80 && (
+                    <p className="flex items-center gap-1.5 text-xs font-medium text-destructive">
+                      <TriangleAlert className="h-3.5 w-3.5" />
+                      {budget.pct >= 100 ? 'Đã vượt ngân sách' : 'Sắp đạt giới hạn'}
+                    </p>
+                  )}
+                </CardBody>
+              </Card>
+            )
+          })}
         </div>
-      ))}
+      )}
     </main>
   )
 }
