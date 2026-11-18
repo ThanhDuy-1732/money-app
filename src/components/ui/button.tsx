@@ -40,6 +40,19 @@ interface ButtonProps
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, loading = false, fullWidth = false, disabled, children, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button'
+    const content =
+      !asChild && loading ? (
+        <>
+          <span
+            aria-hidden
+            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+          />
+          {children}
+        </>
+      ) : (
+        children
+      )
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }), fullWidth && 'w-full')}
@@ -48,13 +61,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         {...props}
       >
-        {loading && !asChild && (
-          <span
-            aria-hidden
-            className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-          />
-        )}
-        {children}
+        {content}
       </Comp>
     )
   }

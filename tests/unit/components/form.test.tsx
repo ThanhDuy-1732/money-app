@@ -14,6 +14,16 @@ describe('form primitives', () => {
     expect(html).toContain('disabled')
   })
 
+  it('passes a single child through when asChild is set', () => {
+    const html = renderToStaticMarkup(
+      <Button asChild>
+        <a href="/register">Đăng ký</a>
+      </Button>
+    )
+    expect(html).toContain('href="/register"')
+    expect(html).toContain('Đăng ký')
+  })
+
   it('marks an invalid input', () => {
     expect(renderToStaticMarkup(<Input invalid />)).toContain('aria-invalid="true"')
   })

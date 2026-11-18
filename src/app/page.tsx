@@ -1,6 +1,41 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Coins, CreditCard, Flame, Gift, Sparkles, WalletCards } from 'lucide-react'
+import { Button, Card, Coin, Guilloche, SecurityThread, WatermarkCoin } from '@/components/ui'
+
+const FEATURES = [
+  {
+    icon: WalletCards,
+    title: 'Ghi chi tiêu, đặt ngân sách',
+    desc: 'Theo dõi thu chi theo tháng, đặt hạn mức cho từng khoản và mục tiêu tiết kiệm.',
+  },
+  {
+    icon: Coins,
+    title: 'Đăng bài, nhận điểm',
+    desc: 'Mỗi bài bạn chia sẻ được +10 điểm, tối đa 3 bài mỗi ngày.',
+  },
+  {
+    icon: Flame,
+    title: 'Điểm danh mỗi ngày',
+    desc: 'Giữ chuỗi ngày liên tiếp để nhận thêm điểm và phần thưởng mốc.',
+  },
+  {
+    icon: CreditCard,
+    title: 'Nạp điểm bằng VNPay',
+    desc: '1.000đ được 1 điểm. Dùng để đổi quà hoặc nâng cấp Premium.',
+  },
+  {
+    icon: Gift,
+    title: 'Mời bạn, cùng nhận thưởng',
+    desc: 'Bạn bè đăng ký bằng mã của bạn, cả hai đều được cộng điểm.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Premium mở khóa giới hạn',
+    desc: 'Bỏ giới hạn ngân sách, mục tiêu, ghi chú và việc cần làm.',
+  },
+]
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -8,69 +43,112 @@ export default async function HomePage() {
   if (user) redirect('/feed')
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-50">
-      {/* Nav */}
-      <header className="border-b border-gray-100 dark:border-gray-800 px-6 py-4 flex items-center justify-between">
-        <span className="font-bold text-xl text-blue-600">MoneyApp</span>
-        <div className="flex gap-3">
-          <Link href="/login" className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+    <div className="min-h-screen">
+      <header className="mx-auto flex max-w-wide items-center justify-between px-6 py-5">
+        <Link href="/" className="text-xl font-extrabold tracking-tight text-primary">
+          MoneyApp
+        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/login"
+            className="px-4 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground"
+          >
             Đăng nhập
           </Link>
-          <Link href="/register" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-            Bắt đầu miễn phí
-          </Link>
+          <Button asChild size="sm">
+            <Link href="/register">Đăng ký</Link>
+          </Button>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="max-w-4xl mx-auto px-6 py-20 text-center space-y-6">
-        <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-sm font-medium px-4 py-2 rounded-full">
-          🎁 Nhận <strong>50 điểm</strong> ngay khi đăng ký — hoàn toàn miễn phí
+      <section className="mx-auto grid max-w-wide items-center gap-10 px-6 pb-20 pt-10 md:grid-cols-[1.15fr_1fr] md:pt-20">
+        <div className="space-y-6">
+          <p className="text-micro font-bold uppercase tracking-[0.18em] text-primary">
+            Ví cá nhân · điểm thưởng
+          </p>
+          <h1 className="text-[40px] font-extrabold leading-[1.05] tracking-tight md:text-display">
+            Quản lý tiền của bạn, và được thưởng vì làm điều đó.
+          </h1>
+          <p className="max-w-[46ch] text-body text-muted-foreground">
+            Ghi chi tiêu, đặt mục tiêu tiết kiệm và chia sẻ cùng bạn bè. Mỗi hoạt động đều tích điểm để đổi quà.
+          </p>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <Button asChild size="lg">
+              <Link href="/register">Nhận 50 điểm khi đăng ký</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <Link href="/explore">Xem bài đăng</Link>
+            </Button>
+          </div>
         </div>
-        <h1 className="text-5xl font-extrabold leading-tight tracking-tight">
-          Chia sẻ. Kết nối.{' '}
-          <span className="text-blue-600">Kiếm điểm.</span>
-        </h1>
-        <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-          Mạng xã hội tích điểm thưởng — đăng bài, kết bạn, hoàn thành thử thách và đổi quà hấp dẫn.
-        </p>
-        <div className="flex gap-4 justify-center pt-2">
-          <Link href="/register" className="px-8 py-3 text-base font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 dark:shadow-none">
-            Tạo tài khoản
-          </Link>
-          <Link href="/explore" className="px-8 py-3 text-base font-semibold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-            Khám phá bài đăng
-          </Link>
-        </div>
-      </section>
 
-      {/* Features */}
-      <section className="max-w-4xl mx-auto px-6 pb-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {[
-            { icon: '📝', title: 'Đăng bài, kiếm điểm', desc: 'Mỗi bài đăng bạn chia sẻ mang lại +10 điểm. Càng năng động, càng nhiều thưởng.' },
-            { icon: '🔥', title: 'Streak đăng nhập', desc: 'Đăng nhập mỗi ngày để duy trì streak và nhân điểm thưởng theo chuỗi ngày liên tiếp.' },
-            { icon: '💰', title: 'Nạp điểm qua VNPay', desc: 'Nạp điểm nhanh chóng qua VNPay. 1.000đ = 1 điểm, dùng đổi quà tức thì.' },
-            { icon: '🤝', title: 'Giới thiệu bạn bè', desc: 'Mỗi người bạn giới thiệu thành công, cả hai đều nhận thưởng điểm hấp dẫn.' },
-          ].map(f => (
-            <div key={f.title} className="flex gap-4 p-5 border border-gray-100 dark:border-gray-800 rounded-xl hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
-              <span className="text-3xl leading-none">{f.icon}</span>
+        <div className="flex justify-center md:justify-end">
+          <div
+            data-testid="landing-note"
+            className="relative isolate w-full max-w-sm overflow-hidden rounded-[28px] border border-primary/20 bg-secondary p-6 text-secondary-foreground shadow-sheet"
+          >
+            <Guilloche className="text-primary" opacity={0.08} />
+            <SecurityThread className="absolute left-[62%] top-0 h-full -rotate-6" />
+            <WatermarkCoin className="-bottom-14 -right-4" size={220} opacity={0.08} />
+
+            <div className="relative z-10 flex items-start justify-between">
               <div>
-                <h3 className="font-semibold mb-1">{f.title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{f.desc}</p>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-primary">
+                  Điểm khởi đầu
+                </p>
+                <p className="mt-1 font-mono text-[10px] tracking-[0.08em] text-primary/70">
+                  SERI 0050 0001
+                </p>
               </div>
+              <Coin size={36} flip />
             </div>
-          ))}
+
+            <p className="relative z-10 mt-8 text-[84px] font-extrabold leading-none tracking-[-0.06em] text-primary">
+              50
+              <span className="ml-2 text-xl font-bold tracking-normal text-primary/60">điểm</span>
+            </p>
+            <p className="relative z-10 mt-2 text-sm font-semibold text-primary/80">
+              Khi bạn hoàn tất đăng ký.
+            </p>
+
+            <div className="relative z-10 mt-8 flex items-end justify-between">
+              <span className="rounded-full border border-primary/20 bg-card/50 px-2 py-1 text-[10px] font-bold text-primary">
+                MoneyApp
+              </span>
+              <span className="font-mono text-[10px] tracking-[0.08em] text-primary/60">
+                POLYMER · VND
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* CTA bottom */}
-      <section className="border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 py-16 text-center space-y-4">
-        <h2 className="text-2xl font-bold">Sẵn sàng bắt đầu?</h2>
-        <p className="text-gray-500 dark:text-gray-400">Đăng ký miễn phí — nhận ngay 50 điểm chào mừng.</p>
-        <Link href="/register" className="inline-block mt-2 px-8 py-3 text-base font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors">
-          Đăng ký ngay →
-        </Link>
+      <section className="border-t border-border bg-card py-16">
+        <div className="mx-auto max-w-wide px-6">
+          <h2 className="text-h2 font-bold tracking-tight">Bạn làm được gì với MoneyApp</h2>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map(feature => {
+              const Icon = feature.icon
+              return (
+                <Card key={feature.title} className="p-5">
+                  <Icon className="h-5 w-5 text-primary" />
+                  <h3 className="mt-3 font-semibold">{feature.title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{feature.desc}</p>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-ink py-16 text-center text-background">
+        <div className="mx-auto max-w-xl space-y-5 px-6">
+          <h2 className="text-h1 font-extrabold tracking-tight">Bắt đầu với 50 điểm</h2>
+          <p className="text-background/70">Đăng ký miễn phí, không cần thẻ.</p>
+          <Button asChild variant="coin" size="lg">
+            <Link href="/register">Tạo tài khoản</Link>
+          </Button>
+        </div>
       </section>
     </div>
   )
