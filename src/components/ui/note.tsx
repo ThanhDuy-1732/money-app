@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn'
+import { Coin } from './coin'
 import { Guilloche } from './guilloche'
 import { SecurityThread } from './security-thread'
 import { Serial } from './serial'
@@ -10,12 +11,14 @@ export function Note({
   streak,
   rank,
   className,
+  balanceTestId,
 }: {
   points: number
   serial?: string
   streak?: number
   rank?: string
   className?: string
+  balanceTestId?: string
 }) {
   return (
     <div
@@ -31,7 +34,10 @@ export function Note({
 
       <div className="relative z-10 flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-primary">Số dư điểm</p>
+          <div className="flex items-center gap-2">
+            <Coin key={points} size={22} flip />
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-primary">Số dư điểm</p>
+          </div>
           <Serial value={serial ?? '0042 8817'} label="SỐ VÍ" className="mt-1 text-primary/70" />
         </div>
         {typeof streak === 'number' && (
@@ -42,7 +48,10 @@ export function Note({
         )}
       </div>
 
-      <p className="relative z-10 mt-5 text-[46px] font-extrabold leading-none tracking-[-0.045em] text-primary">
+      <p
+        data-testid={balanceTestId}
+        className="relative z-10 mt-5 text-[46px] font-extrabold leading-none tracking-[-0.045em] text-primary"
+      >
         {points.toLocaleString('vi-VN')}
         <span className="ml-2 text-base font-bold tracking-normal text-primary/60">điểm</span>
       </p>
