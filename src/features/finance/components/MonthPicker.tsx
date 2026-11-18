@@ -1,5 +1,7 @@
 'use client'
 import { useRouter } from 'next/navigation'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui'
 
 function prevMonth(month: string): string {
   const [y, m] = month.split('-').map(Number)
@@ -23,25 +25,29 @@ export function MonthPicker({ month }: { month: string }) {
   const isCurrentMonth = month === currentMonth()
 
   return (
-    <div className="flex items-center gap-3">
-      <button
-        onClick={() => router.push(`/finance?month=${prevMonth(month)}`)}
-        className="px-2 py-1 border rounded hover:bg-gray-50 text-sm"
+    <div className="flex items-center gap-1">
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
         aria-label="Tháng trước"
+        onClick={() => router.push(`/finance?month=${prevMonth(month)}`)}
       >
-        ←
-      </button>
-      <span className="font-semibold text-sm min-w-[7rem] text-center">
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      <span className="min-w-[7rem] text-center text-sm font-semibold">
         Tháng {m}/{y}
       </span>
-      <button
-        onClick={() => router.push(`/finance?month=${nextMonth(month)}`)}
-        disabled={isCurrentMonth}
-        className="px-2 py-1 border rounded hover:bg-gray-50 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
         aria-label="Tháng sau"
+        disabled={isCurrentMonth}
+        onClick={() => router.push(`/finance?month=${nextMonth(month)}`)}
       >
-        →
-      </button>
+        <ChevronRight className="h-4 w-4" />
+      </Button>
     </div>
   )
 }

@@ -1,8 +1,14 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createTransaction } from '@/features/finance/transaction.actions'
+import { PageHeader } from '@/components/ui'
+import { TransactionForm } from '@/features/finance/components/TransactionForm'
 
-export default async function NewTransactionPage() {
+export default async function NewTransactionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -13,6 +19,8 @@ export default async function NewTransactionPage() {
     .or('user_id.is.null,user_id.eq.' + user.id)
     .order('name')
 
+  const { error } = await searchParams
+
   async function submit(form: FormData) {
     'use server'
     const result = await createTransaction({
@@ -22,48 +30,30 @@ export default async function NewTransactionPage() {
       note: form.get('note') || undefined,
       occurred_at: form.get('occurred_at') || undefined,
     })
-    if (!result.error) redirect('/finance')
+    if (result.error) {
+      redirect(`/finance/new?error=${encodeURIComponent(result.error)}`)
+    }
+    redirect('/finance')
   }
 
   return (
-    <main className="max-w-lg mx-auto px-4 py-6">
-      <h1 className="text-xl font-bold mb-4">Thêm giao dịch</h1>
-      <form action={submit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Loại</label>
-          <select name="type" className="w-full border rounded-lg p-2" required>
-            <option value="expense">Chi tiêu</option>
-            <option value="income">Thu nhập</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Số tiền (VNĐ)</label>
-          <input name="amount_vnd" type="number" min="1" step="1000" required
-            className="w-full border rounded-lg p-2" placeholder="50000" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Danh mục</label>
-          <select name="category_id" className="w-full border rounded-lg p-2">
-            <option value="">Không phân loại</option>
-            {(categories ?? []).map((c: any) => (
-              <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Ngày</label>
-          <input name="occurred_at" type="date" className="w-full border rounded-lg p-2"
-            defaultValue={new Date().toISOString().slice(0, 10)} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Ghi chú</label>
-          <input name="note" type="text" maxLength={200} className="w-full border rounded-lg p-2"
-            placeholder="Tùy chọn" />
-        </div>
-        <button type="submit" className="w-full py-2 bg-blue-600 text-white rounded-xl font-semibold">
-          Lưu giao dịch
-        </button>
-      </form>
+    <main className="mx-auto max-w-narrow space-y-6 px-4 py-6">
+      <PageHeader
+        title="Thêm giao dịch"
+        description="Ghi lại một khoản thu hoặc chi."
+        backHref="/finance"
+      />
+
+      {error && (
+        <p
+          role="alert"
+          className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-sm font-medium text-destructive"
+        >
+          {error}
+        </p>
+      )}
+
+      <TransactionForm categories={categories ?? []} action={submit} />
     </main>
   )
 }

@@ -1,9 +1,19 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import dayjs from 'dayjs'
 import { createClient } from '@/lib/supabase/server'
 import { listTransactions } from '@/features/finance/transaction.actions'
 import { MonthPicker } from '@/features/finance/components/MonthPicker'
 import { getSubscriptionStatus } from '@/features/billing/subscription.actions'
+import {
+  Amount,
+  Button,
+  CategoryIcon,
+  EmptyState,
+  PageHeader,
+  Serial,
+  Stat,
+} from '@/components/ui'
 
 function currentMonth(): string {
   return new Date().toISOString().slice(0, 7)
@@ -11,6 +21,15 @@ function currentMonth(): string {
 
 function isValidMonth(s: string): boolean {
   return /^\d{4}-(0[1-9]|1[0-2])$/.test(s)
+}
+
+type TransactionRow = {
+  id: string
+  type: 'income' | 'expense'
+  amount_vnd: number
+  note: string | null
+  occurred_at: string
+  categories: { name: string; icon: string | null } | null
 }
 
 export default async function FinancePage({
@@ -24,58 +43,104 @@ export default async function FinancePage({
 
   const { month: rawMonth } = await searchParams
   const month =
-    typeof rawMonth === 'string' && isValidMonth(rawMonth)
-      ? rawMonth
-      : currentMonth()
+    typeof rawMonth === 'string' && isValidMonth(rawMonth) ? rawMonth : currentMonth()
 
   const [{ transactions, totalIncome, totalExpense }, { isPremium }] = await Promise.all([
     listTransactions(month),
     getSubscriptionStatus(),
   ])
 
+  const rows = transactions as TransactionRow[]
+  const groups = new Map<string, TransactionRow[]>()
+  for (const row of rows) {
+    const key = dayjs(row.occurred_at).format('DD/MM/YYYY')
+    const list = groups.get(key) ?? []
+    list.push(row)
+    groups.set(key, list)
+  }
+
+  const monthLabel = dayjs(`${month}-01`).format('MM/YYYY')
+
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <MonthPicker month={month} />
-        <div className="flex gap-2">
-          {isPremium && (
-            <Link href="/finance/trends" className="px-3 py-2 border rounded-lg text-sm text-zinc-600">
-              📈 Xu hướng
-            </Link>
-          )}
-          <Link href="/finance/new" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm">
-            + Thêm giao dịch
-          </Link>
-        </div>
+    <main className="mx-auto max-w-default space-y-6 px-4 py-6">
+      <PageHeader
+        title="Tài chính"
+        description="Theo dõi thu chi theo tháng."
+        actions={
+          <>
+            <MonthPicker month={month} />
+            <Button asChild>
+              <Link href="/finance/new">Thêm giao dịch</Link>
+            </Button>
+            {isPremium && (
+              <Button asChild variant="outline">
+                <Link href="/finance/trends">Xu hướng</Link>
+              </Button>
+            )}
+          </>
+        }
+      />
+
+      <div data-testid="finance-summary" className="grid grid-cols-2 gap-4">
+        <Stat
+          label="Thu nhập"
+          value={<Amount value={totalIncome} kind="vnd" sign="plus" tone="leaf" />}
+          delta={`Tháng ${monthLabel}`}
+        />
+        <Stat
+          label="Chi tiêu"
+          value={<Amount value={totalExpense} kind="vnd" sign="minus" tone="lotus" />}
+          delta={`Tháng ${monthLabel}`}
+        />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="border rounded-xl p-4">
-          <p className="text-sm text-gray-500">Thu nhập</p>
-          <p className="text-lg font-bold text-green-600">+{totalIncome.toLocaleString('vi-VN')}đ</p>
-        </div>
-        <div className="border rounded-xl p-4">
-          <p className="text-sm text-gray-500">Chi tiêu</p>
-          <p className="text-lg font-bold text-red-600">-{totalExpense.toLocaleString('vi-VN')}đ</p>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        {transactions.length === 0 && (
-          <p className="text-center text-gray-400 py-8">Chưa có giao dịch nào tháng này.</p>
-        )}
-        {transactions.map((t: any) => (
-          <div key={t.id} className="flex items-center justify-between border rounded-lg p-3">
-            <div>
-              <span className="mr-2">{t.categories?.icon ?? '📦'}</span>
-              <span className="text-sm">{t.categories?.name ?? 'Không phân loại'}</span>
-              {t.note && <p className="text-xs text-gray-400 ml-6">{t.note}</p>}
+      <div data-testid="transaction-ledger" className="space-y-4">
+        {rows.length === 0 ? (
+          <EmptyState
+            title="Chưa có giao dịch tháng này"
+            description="Thêm giao dịch đầu tiên để bắt đầu theo dõi."
+            action={
+              <Button asChild>
+                <Link href="/finance/new">Thêm giao dịch</Link>
+              </Button>
+            }
+          />
+        ) : (
+          [...groups.entries()].map(([date, items]) => (
+            <div key={date}>
+              <p className="px-1 pb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                {date}
+              </p>
+              <div className="divide-y divide-border rounded-lg border border-border bg-card px-3">
+                {items.map(row => (
+                  <div key={row.id} className="flex items-center gap-3 py-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
+                      <CategoryIcon
+                        icon={row.categories?.icon ?? null}
+                        className="h-4 w-4 text-primary"
+                      />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">
+                        {row.categories?.name ?? 'Không phân loại'}
+                      </p>
+                      {row.note && (
+                        <p className="truncate text-xs text-muted-foreground">{row.note}</p>
+                      )}
+                      <Serial value={row.id} className="mt-0.5" />
+                    </div>
+                    <Amount
+                      value={row.amount_vnd}
+                      kind="vnd"
+                      sign={row.type === 'income' ? 'plus' : 'minus'}
+                      tone={row.type === 'income' ? 'leaf' : 'lotus'}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-            <span className={`font-semibold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-              {t.type === 'income' ? '+' : '-'}{t.amount_vnd.toLocaleString('vi-VN')}đ
-            </span>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </main>
   )
