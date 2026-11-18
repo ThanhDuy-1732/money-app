@@ -1,5 +1,5 @@
 'use client'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { registerSchema, otpSchema, type RegisterInput, type OtpInput } from '@/lib/validators/auth'
@@ -14,6 +14,7 @@ export function RegisterForm() {
 
   const emailForm = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) })
   const otpForm = useForm<OtpInput>({ resolver: zodResolver(otpSchema) })
+  const otpValue = useWatch({ control: otpForm.control, name: 'otp' }) ?? ''
 
   async function onEmailSubmit(data: RegisterInput) {
     setServerError(null)
@@ -52,7 +53,7 @@ export function RegisterForm() {
             id="register-otp"
             invalid={!!otpForm.formState.errors.otp}
             aria-describedby={otpForm.formState.errors.otp ? 'register-otp-error' : undefined}
-            value={otpForm.watch('otp') ?? ''}
+            value={otpValue}
             onChange={(v: string) => otpForm.setValue('otp', v)}
           />
         </Field>

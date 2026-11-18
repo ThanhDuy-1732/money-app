@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchFeedPage } from '../actions/feed.actions'
 import { PostCard } from './PostCard'
 import type { Database } from '@/lib/types/database'
@@ -28,6 +28,16 @@ export function LoadMoreFeed({
   const [done, setDone] = useState(!initialCursor)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
+  const loadMore = useCallback(async () => {
+    if (!cursor || loading) return
+    setLoading(true)
+    const { posts: next, nextCursor } = await fetchFeedPage(cursor, userId ?? null, followingOnly)
+    setPosts(prev => [...prev, ...(next as FeedPost[])])
+    if (!nextCursor) setDone(true)
+    else setCursor(nextCursor)
+    setLoading(false)
+  }, [cursor, loading, userId, followingOnly])
+
   useEffect(() => {
     if (done) return
     const observer = new IntersectionObserver(
@@ -38,18 +48,7 @@ export function LoadMoreFeed({
     )
     if (sentinelRef.current) observer.observe(sentinelRef.current)
     return () => observer.disconnect()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cursor, loading, done])
-
-  async function loadMore() {
-    if (!cursor || loading) return
-    setLoading(true)
-    const { posts: next, nextCursor } = await fetchFeedPage(cursor, userId ?? null, followingOnly)
-    setPosts(prev => [...prev, ...(next as FeedPost[])])
-    if (!nextCursor) setDone(true)
-    else setCursor(nextCursor)
-    setLoading(false)
-  }
+  }, [loadMore, loading, done])
 
   return (
     <>

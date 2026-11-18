@@ -274,6 +274,18 @@ supabase/
 
 ---
 
+## Design system (Polymer Ledger)
+
+- **Ngôn ngữ:** tờ polymer Việt Nam (giấy/mực/lá/sen/xu) + ví điện tử hiện đại.
+- **Tokens:** `src/app/globals.css` (`--color-*`, `--text-*`, `--radius-*`, `--container-*`, `--shadow-sheet`).
+- **Primitives:** `src/components/ui/` — Button, Input, Field, Card, Badge, Avatar, Tabs, Segmented, Progress, Skeleton, EmptyState, Stat, PageHeader, Section, Table, Amount, Serial, Stamp, Note, CategoryIcon.
+- **Shell:** `AppNav` (sidebar 240px / mobile top bar + bottom nav + Thêm sheet); admin tabs inside the main shell.
+- **Page template:** PageHeader + Section; containers narrow/default/wide; cards flat; dark mode follows system.
+- **Dev playground:** `/design`, `/design/shell` (404 in production).
+- **Test ids:** `balance`, `referral-code`, `referral-total`; OTP `placeholder="000000"`.
+
+---
+
 ## Tài liệu liên quan
 
 | File | Mục đích |

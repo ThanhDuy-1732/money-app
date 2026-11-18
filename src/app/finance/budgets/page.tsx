@@ -29,7 +29,7 @@ export default async function BudgetsPage() {
   const month = new Date().toISOString().slice(0, 7)
   const budgets = await listBudgets(month)
   const withProgress = await Promise.all(
-    budgets.map(async (b: any) => {
+    budgets.map(async b => {
       const { spent, limit } = await getBudgetProgress(b.category_id, month)
       return { ...b, spent, pct: limit > 0 ? Math.min((spent / limit) * 100, 100) : 0 }
     })

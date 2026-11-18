@@ -58,7 +58,8 @@ export function PostComposer({ userId }: { userId: string }) {
 
   return (
     <Card>
-      <CardBody className="space-y-3 pt-4">
+      <form onSubmit={handleSubmit}>
+        <CardBody className="space-y-3 pt-4">
         <Textarea
           placeholder="Bạn đang nghĩ gì?"
           maxLength={500}
@@ -70,6 +71,7 @@ export function PostComposer({ userId }: { userId: string }) {
         {imageUrls.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {imageUrls.map(url => (
+              // eslint-disable-next-line @next/next/no-img-element
               <img key={url} src={url} alt="" className="h-20 w-20 rounded-md object-cover" />
             ))}
           </div>
@@ -105,7 +107,8 @@ export function PostComposer({ userId }: { userId: string }) {
             Đăng
           </Button>
         </div>
-      </CardBody>
+        </CardBody>
+      </form>
     </Card>
   )
 }

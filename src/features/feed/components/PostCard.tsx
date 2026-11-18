@@ -41,6 +41,7 @@ export function PostCard({ post, currentUserId }: { post: Post; currentUserId?: 
         {images.length > 0 && (
           <div className="grid grid-cols-2 gap-1">
             {images.map(url => (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={url}
                 src={url}
