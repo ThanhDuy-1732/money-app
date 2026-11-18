@@ -1,11 +1,18 @@
 'use client'
 import { useState } from 'react'
+import { Heart } from 'lucide-react'
 import { likePost, unlikePost } from '../actions/feed.actions'
 import { Button } from '@/components/ui'
 
 export function LikeButton({
-  postId, initialCount, initialLiked,
-}: { postId: string; initialCount: number; initialLiked: boolean }) {
+  postId,
+  initialCount,
+  initialLiked,
+}: {
+  postId: string
+  initialCount: number
+  initialLiked: boolean
+}) {
   const [liked, setLiked] = useState(initialLiked)
   const [count, setCount] = useState(initialCount)
 
@@ -22,8 +29,17 @@ export function LikeButton({
   }
 
   return (
-    <Button variant="ghost" size="sm" onClick={toggle} className="gap-1 text-gray-500">
-      {liked ? '❤️' : '🤍'} {count}
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={toggle}
+      aria-pressed={liked}
+      className="gap-1 text-muted-foreground"
+    >
+      <span data-icon="heart" className="inline-flex">
+        <Heart className={liked ? 'h-4 w-4 fill-current text-lotus' : 'h-4 w-4'} />
+      </span>
+      {count}
     </Button>
   )
 }

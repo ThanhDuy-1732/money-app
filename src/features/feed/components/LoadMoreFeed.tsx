@@ -6,9 +6,11 @@ import type { Database } from '@/lib/types/database'
 
 type FeedPost = Database['public']['Tables']['posts']['Row'] & {
   profiles: { display_name: string; avatar_url: string | null }
-  comments: Array<Database['public']['Tables']['comments']['Row'] & {
-    profiles: { display_name: string; avatar_url: string | null }
-  }>
+  comments: Array<
+    Database['public']['Tables']['comments']['Row'] & {
+      profiles: { display_name: string; avatar_url: string | null }
+    }
+  >
 }
 
 export function LoadMoreFeed({
@@ -51,9 +53,11 @@ export function LoadMoreFeed({
 
   return (
     <>
-      {posts.map(post => <PostCard key={post.id} post={post} currentUserId={userId} />)}
+      {posts.map(post => (
+        <PostCard key={post.id} post={post} currentUserId={userId} />
+      ))}
       {!done && (
-        <div ref={sentinelRef} className="py-4 text-center text-sm text-gray-400">
+        <div ref={sentinelRef} className="py-4 text-center text-sm text-muted-foreground">
           {loading ? 'Đang tải thêm...' : ''}
         </div>
       )}

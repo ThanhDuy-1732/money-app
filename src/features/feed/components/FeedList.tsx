@@ -1,13 +1,16 @@
 import { fetchFeedPage } from '../actions/feed.actions'
 import { PostCard } from './PostCard'
 import { LoadMoreFeed } from './LoadMoreFeed'
+import { EmptyState } from '@/components/ui'
 import type { Database } from '@/lib/types/database'
 
 type FeedPost = Database['public']['Tables']['posts']['Row'] & {
   profiles: { display_name: string; avatar_url: string | null }
-  comments: Array<Database['public']['Tables']['comments']['Row'] & {
-    profiles: { display_name: string; avatar_url: string | null }
-  }>
+  comments: Array<
+    Database['public']['Tables']['comments']['Row'] & {
+      profiles: { display_name: string; avatar_url: string | null }
+    }
+  >
 }
 
 export async function FeedList({
@@ -20,7 +23,12 @@ export async function FeedList({
   const { posts, nextCursor } = await fetchFeedPage(null, userId ?? null, followingOnly)
 
   if (!posts.length) {
-    return <p className="text-center text-gray-400 py-8">Chưa có bài đăng nào.</p>
+    return (
+      <EmptyState
+        title="Chưa có bài đăng"
+        description="Theo dõi vài người hoặc đăng bài đầu tiên để bắt đầu."
+      />
+    )
   }
 
   return (

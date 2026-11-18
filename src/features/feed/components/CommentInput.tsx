@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { createComment } from '../actions/feed.actions'
-import { Input, Button } from '@/components/ui'
+import { Button, Input } from '@/components/ui'
 
 export function CommentInput({ postId }: { postId: string }) {
   const [content, setContent] = useState('')
@@ -17,15 +17,17 @@ export function CommentInput({ postId }: { postId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 mt-2">
+    <form onSubmit={handleSubmit} className="flex gap-2">
       <Input
         placeholder="Bình luận..."
         value={content}
         onChange={e => setContent(e.target.value)}
         maxLength={300}
-        className="flex-1 h-8 text-sm"
+        className="h-9 flex-1 text-sm"
       />
-      <Button type="submit" size="sm" disabled={loading || !content.trim()}>Gửi</Button>
+      <Button type="submit" size="sm" disabled={loading || !content.trim()}>
+        Gửi
+      </Button>
     </form>
   )
 }
