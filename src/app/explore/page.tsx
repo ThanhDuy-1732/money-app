@@ -1,96 +1,123 @@
+import Link from 'next/link'
 import { FeedList } from '@/features/feed/components/FeedList'
 import { createClient } from '@/lib/supabase/server'
 import { searchContent } from '@/features/search/actions/search.actions'
 import { SearchInput } from '@/features/search/components/SearchInput'
-import Link from 'next/link'
+import {
+  Avatar,
+  Button,
+  Card,
+  CardBody,
+  EmptyState,
+  PageHeader,
+  Section,
+} from '@/components/ui'
+import { cn } from '@/lib/cn'
+
+const TABS = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'posts', label: 'Bài đăng' },
+  { value: 'users', label: 'Người dùng' },
+]
 
 export default async function ExplorePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string | string[] }>
+  searchParams: Promise<{ q?: string | string[]; type?: string | string[] }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const { q: rawQ } = await searchParams
+  const { q: rawQ, type: rawType } = await searchParams
   const q = typeof rawQ === 'string' ? rawQ.trim() : ''
+  const type = typeof rawType === 'string' && ['posts', 'users'].includes(rawType) ? rawType : 'all'
 
   const { posts: searchPosts, users: searchUsers } = q
     ? await searchContent(q)
     : { posts: [], users: [] }
 
   return (
-    <main className="max-w-lg mx-auto px-4 py-6 space-y-6">
-      <h1 className="text-xl font-bold">Khám phá</h1>
+    <main className="mx-auto max-w-narrow space-y-6 px-4 py-6">
+      <PageHeader title="Khám phá" description="Tìm bài viết và người dùng." />
 
-      {/* Search form — GET, no JS required; autocomplete via SearchInput */}
       <form action="/explore" method="GET">
         <div className="flex gap-2">
           <SearchInput defaultValue={q} />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg"
-          >
-            Tìm
-          </button>
+          <Button type="submit">Tìm</Button>
         </div>
       </form>
 
       {q ? (
         <div className="space-y-6">
-          {/* Users section */}
-          {searchUsers.length > 0 && (
-            <section>
-              <h2 className="text-sm font-semibold text-gray-500 mb-2">Người dùng</h2>
-              <div className="space-y-2">
+          <div className="flex gap-1 overflow-x-auto border-b border-border">
+            {TABS.map(tab => (
+              <Link
+                key={tab.value}
+                href={`/explore?q=${encodeURIComponent(q)}&type=${tab.value}`}
+                className={cn(
+                  '-mb-px shrink-0 border-b-2 px-3 py-2 text-sm font-semibold',
+                  type === tab.value
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {tab.label}
+              </Link>
+            ))}
+          </div>
+
+          {(type === 'all' || type === 'users') && searchUsers.length > 0 && (
+            <Section title="Người dùng">
+              <div className="grid gap-2">
                 {searchUsers.map(u => (
                   <Link
                     key={u.id}
                     href={`/u/${u.username ?? u.id}`}
-                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50"
+                    className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:border-primary/40"
                   >
-                    {u.avatar_url ? (
-                      <img src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-600">
-                        {u.display_name?.[0] ?? '?'}
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-sm font-semibold">{u.display_name}</p>
-                      {u.username && <p className="text-xs text-gray-400">@{u.username}</p>}
+                    <Avatar src={u.avatar_url} fallback={u.display_name} size="sm" />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{u.display_name}</p>
+                      {u.username && (
+                        <p className="text-xs text-muted-foreground">@{u.username}</p>
+                      )}
                     </div>
                   </Link>
                 ))}
               </div>
-            </section>
+            </Section>
           )}
 
-          {/* Posts section */}
-          <section>
-            <h2 className="text-sm font-semibold text-gray-500 mb-2">
-              Bài viết {searchPosts.length > 0 ? `(${searchPosts.length})` : ''}
-            </h2>
-            {searchPosts.length === 0 ? (
-              <p className="text-center text-gray-400 py-8">Không tìm thấy kết quả.</p>
-            ) : (
-              <div className="space-y-3">
-                {searchPosts.map(p => (
-                  <div key={p.id} className="border rounded-lg p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-semibold">{p.profiles.display_name}</span>
-                      <span className="text-xs text-gray-400">
-                        {new Date(p.created_at).toLocaleDateString('vi-VN')}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-700 line-clamp-3">{p.content}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+          {(type === 'all' || type === 'posts') && (
+            <Section
+              title={`Bài viết${searchPosts.length > 0 ? ` (${searchPosts.length})` : ''}`}
+            >
+              {searchPosts.length === 0 ? (
+                <EmptyState
+                  title="Không tìm thấy kết quả"
+                  description={`Không có bài viết cho “${q}”.`}
+                />
+              ) : (
+                <div className="space-y-3">
+                  {searchPosts.map(p => (
+                    <Card key={p.id}>
+                      <CardBody className="pt-4">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="font-semibold text-foreground">
+                            {p.profiles.display_name}
+                          </span>
+                          <span>·</span>
+                          <span>{new Date(p.created_at).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                        <p className="mt-1 line-clamp-3 text-sm text-foreground">{p.content}</p>
+                      </CardBody>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </Section>
+          )}
         </div>
       ) : (
-        /* Default: show public feed */
         <FeedList userId={user?.id} />
       )}
     </main>
