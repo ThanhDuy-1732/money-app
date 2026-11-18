@@ -1,9 +1,16 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { Bell } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
-export function NotificationBadge({ userId, initialCount }: { userId: string; initialCount: number }) {
+export function NotificationBadge({
+  userId,
+  initialCount,
+}: {
+  userId: string
+  initialCount: number
+}) {
   const [count, setCount] = useState(initialCount)
 
   useEffect(() => {
@@ -28,14 +35,22 @@ export function NotificationBadge({ userId, initialCount }: { userId: string; in
         }
       )
       .subscribe()
-    return () => { supabase.removeChannel(channel) }
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [userId])
 
   return (
-    <Link href="/notifications" className="relative">
-      🔔
+    <Link
+      href="/notifications"
+      aria-label={`${count} thông báo chưa đọc`}
+      data-testid="unread-count"
+      className="relative rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+    >
+      <Bell className="h-5 w-5" />
       {count > 0 && (
-        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold text-destructive-foreground">
           {count > 9 ? '9+' : count}
         </span>
       )}
