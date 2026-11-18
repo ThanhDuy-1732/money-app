@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { Check, Copy } from 'lucide-react'
 import { Button } from '@/components/ui'
 
 export function InviteLink({ code }: { code: string }) {
@@ -14,11 +15,17 @@ export function InviteLink({ code }: { code: string }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium">Link mời của bạn:</p>
+      <p className="text-sm font-medium">Link mời của bạn</p>
       <div className="flex gap-2">
-        <code className="flex-1 text-xs bg-gray-100 rounded px-3 py-2 break-all" data-testid="referral-code">{code}</code>
-        <Button size="sm" variant="outline" onClick={copy}>
-          {copied ? '✓ Đã copy' : 'Copy'}
+        <code
+          data-testid="referral-code"
+          className="flex-1 break-all rounded-md border border-border bg-muted px-3 py-2 font-mono text-sm tracking-[0.12em]"
+        >
+          {code}
+        </code>
+        <Button size="sm" variant="outline" onClick={copy} aria-label="Sao chép mã mời">
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {copied ? 'Đã chép' : 'Sao chép'}
         </Button>
       </div>
     </div>

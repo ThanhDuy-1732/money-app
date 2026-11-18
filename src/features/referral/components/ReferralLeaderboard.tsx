@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { Avatar, Badge, Card, CardBody } from '@/components/ui'
 
 type LeaderboardRow = {
   display_name: string
@@ -21,20 +22,23 @@ export async function ReferralLeaderboard() {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-base font-semibold">Bảng xếp hạng giới thiệu</h2>
-      <ol className="space-y-2">
-        {rows.map((row, i) => (
-          <li key={i} className="flex items-center gap-3 rounded-lg border p-3">
-            <span className="w-6 text-center text-sm font-bold text-zinc-400">{i + 1}</span>
-            {row.avatar_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={row.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
-            )}
-            <span className="flex-1 text-sm font-medium">{row.display_name}</span>
-            <span className="text-sm text-zinc-500">{row.total_referrals} người</span>
-          </li>
+      <h2 className="text-h3 font-semibold">Bảng xếp hạng giới thiệu</h2>
+      <div className="space-y-2">
+        {rows.map((row, index) => (
+          <Card key={index}>
+            <CardBody className="flex items-center gap-3 py-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
+                {index + 1}
+              </span>
+              <Avatar src={row.avatar_url} fallback={row.display_name} size="sm" />
+              <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                {row.display_name}
+              </span>
+              <Badge variant="coin">{row.total_referrals} người</Badge>
+            </CardBody>
+          </Card>
         ))}
-      </ol>
+      </div>
     </section>
   )
 }
