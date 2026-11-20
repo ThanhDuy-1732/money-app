@@ -1,6 +1,7 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { POST_AUTHOR_EMBED } from '@/features/feed/post-select'
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -41,11 +42,12 @@ export async function unlockUser(userId: string): Promise<void> {
 
 export async function listPosts(limit = 100) {
   const supabase = await requireAdmin()
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('posts')
-    .select('id, content, hidden, created_at, profiles(display_name)')
+    .select(`id, content, hidden, created_at, ${POST_AUTHOR_EMBED}`)
     .order('created_at', { ascending: false })
     .limit(limit)
+  if (error) console.error('[admin] listPosts failed:', error.message)
   return data ?? []
 }
 

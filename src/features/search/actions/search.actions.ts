@@ -1,6 +1,7 @@
 'use server'
 import { createClient } from '@/lib/supabase/server'
 import { escapeLike } from '@/lib/escape-like'
+import { POST_AUTHOR_EMBED } from '@/features/feed/post-select'
 
 export type SearchPost = {
   id: string
@@ -26,10 +27,10 @@ export async function searchContent(
   // Escape LIKE metacharacters so literal % and _ in queries don't act as wildcards
   const likeQ = escapeLike(q)
 
-  const [{ data: rawPosts }, { data: byName }, { data: byUser }] = await Promise.all([
+  const [{ data: rawPosts, error: postsError }, { data: byName }, { data: byUser }] = await Promise.all([
     supabase
       .from('posts')
-      .select('id, content, created_at, profiles(display_name, avatar_url)')
+      .select(`id, content, created_at, ${POST_AUTHOR_EMBED}`)
       .eq('hidden', false)
       .is('deleted_at', null)
       .textSearch('content', q, { type: 'websearch', config: 'simple' })
@@ -40,6 +41,8 @@ export async function searchContent(
     supabase.from('profiles').select('id, display_name, username, avatar_url')
       .ilike('username', `%${likeQ}%`).limit(10),
   ])
+
+  if (postsError) console.error('[search] posts query failed:', postsError.message)
 
   const seen = new Set<string>()
   const rawUsers = [...(byName ?? []), ...(byUser ?? [])].filter(

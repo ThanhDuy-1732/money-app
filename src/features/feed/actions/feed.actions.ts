@@ -2,6 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { postSchema } from '@/lib/validators/post'
+import { POST_AUTHOR_EMBED } from '@/features/feed/post-select'
 
 const IMAGE_STORAGE_PREFIX = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/post-images/`
 
@@ -58,7 +59,7 @@ export async function fetchFeedPage(
 
   const baseSelect = `
     id, user_id, content, image_urls, like_count, comment_count, created_at,
-    profiles(display_name, avatar_url),
+    ${POST_AUTHOR_EMBED},
     comments(id, content, created_at, profiles(display_name, avatar_url))
   `
 
@@ -83,7 +84,8 @@ export async function fetchFeedPage(
   else if (ids) query = query.in('user_id', ids)
   if (cursor) query = query.lt('created_at', cursor)
 
-  const { data: rawPosts } = await query
+  const { data: rawPosts, error } = await query
+  if (error) console.error('[feed] fetchFeedPage failed:', error.message)
 
   const posts = (rawPosts ?? []) as Array<Record<string, unknown> & { created_at: string }>
   const nextCursor = posts.length === FEED_PAGE_SIZE ? posts[posts.length - 1].created_at : null

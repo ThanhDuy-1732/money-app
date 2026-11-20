@@ -44,7 +44,7 @@ export function LoginForm() {
 
   if (step === 'otp') {
     return (
-      <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="space-y-4">
+      <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="space-y-4" noValidate>
         <p className="text-sm text-muted-foreground">
           Mã OTP đã gửi đến <strong className="text-foreground">{email}</strong>
         </p>
@@ -66,7 +66,7 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
+    <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4" noValidate>
       <Field label="Email" htmlFor="login-email" error={emailForm.formState.errors.email?.message}>
         <Input
           id="login-email"

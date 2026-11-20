@@ -44,7 +44,7 @@ export function RegisterForm() {
 
   if (step === 'otp') {
     return (
-      <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="space-y-4">
+      <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="space-y-4" noValidate>
         <p className="text-sm text-muted-foreground">
           Nhập mã 6 số đã gửi đến <strong className="text-foreground">{email}</strong>
         </p>
@@ -66,7 +66,7 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
+    <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4" noValidate>
       <Field
         label="Tên hiển thị"
         htmlFor="register-name"

@@ -35,7 +35,7 @@ export function TransactionForm({
           id="amount"
           name="amount_vnd"
           type="number"
-          min="1"
+          min="1000"
           step="1000"
           required
           placeholder="50000"
