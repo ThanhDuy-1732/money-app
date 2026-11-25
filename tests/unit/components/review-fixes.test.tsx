@@ -47,7 +47,9 @@ describe('review fixes', () => {
   })
 
   it('explore has a users empty state', () => {
-    expect(read('src/app/explore/page.tsx')).toContain('Không tìm thấy người dùng')
+    expect(read('src/features/explore/components/hybrid-search.tsx')).toContain(
+      'Không tìm thấy người dùng'
+    )
   })
 
   it('leaderboard has an empty state', () => {

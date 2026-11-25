@@ -7,6 +7,8 @@ export type SearchPost = {
   id: string
   content: string | null
   created_at: string
+  like_count: number
+  comment_count: number
   profiles: { display_name: string; avatar_url: string | null }
 }
 
@@ -30,7 +32,7 @@ export async function searchContent(
   const [{ data: rawPosts, error: postsError }, { data: byName }, { data: byUser }] = await Promise.all([
     supabase
       .from('posts')
-      .select(`id, content, created_at, ${POST_AUTHOR_EMBED}`)
+      .select(`id, content, created_at, like_count, comment_count, ${POST_AUTHOR_EMBED}`)
       .eq('hidden', false)
       .is('deleted_at', null)
       .textSearch('content', q, { type: 'websearch', config: 'simple' })
