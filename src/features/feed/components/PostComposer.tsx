@@ -1,12 +1,17 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { Check, ImagePlus, X } from 'lucide-react'
+import { Check, ImagePlus, Maximize2, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { createPost } from '../actions/feed.actions'
 import {
   Avatar,
   Button,
   Card,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
   Guilloche,
   Textarea,
   toast,
@@ -16,6 +21,40 @@ import { cn } from '@/lib/cn'
 
 const MAX_IMAGES = 4
 const MAX_LENGTH = 500
+
+function ImagePreviews({
+  urls,
+  onRemove,
+  className,
+}: {
+  urls: string[]
+  onRemove: (url: string) => void
+  className?: string
+}) {
+  if (urls.length === 0) return null
+  return (
+    <div className={cn('flex flex-wrap gap-2', className)}>
+      {urls.map(url => (
+        <div key={url} className="group relative">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={url}
+            alt=""
+            className="h-20 w-20 rounded-lg border border-border object-cover"
+          />
+          <button
+            type="button"
+            onClick={() => onRemove(url)}
+            aria-label="Xoá ảnh"
+            className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sheet transition-colors hover:text-destructive"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export function PostComposer({
   userId,
@@ -33,15 +72,28 @@ export function PostComposer({
   const [uploading, setUploading] = useState(false)
   const [posting, setPosting] = useState(false)
   const [justPosted, setJustPosted] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const inlineRef = useRef<HTMLTextAreaElement>(null)
+  const dialogRef = useRef<HTMLTextAreaElement>(null)
+
+  const disabled = posting || uploading || (content.trim().length === 0 && imageUrls.length === 0)
+  const nearLimit = content.length >= MAX_LENGTH - 50
 
   useEffect(() => {
-    const el = textareaRef.current
+    const el = inlineRef.current
     if (!el) return
     el.style.height = 'auto'
-    el.style.height = `${Math.min(el.scrollHeight, 240)}px`
+    el.style.height = `${Math.min(el.scrollHeight, 220)}px`
   }, [content])
+
+  useEffect(() => {
+    if (!expanded) return
+    const el = dialogRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, 460)}px`
+  }, [content, expanded])
 
   function flashPosted() {
     setJustPosted(true)
@@ -54,6 +106,10 @@ export function PostComposer({
       description: 'Bài viết của bạn đã xuất hiện trên bảng tin.',
       variant: 'success',
     })
+  }
+
+  function removeImage(url: string) {
+    setImageUrls(urls => urls.filter(item => item !== url))
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -91,9 +147,8 @@ export function PostComposer({
     setUploading(false)
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (posting) return
+  async function submit() {
+    if (posting || disabled) return
     setError(null)
     setPosting(true)
 
@@ -102,6 +157,7 @@ export function PostComposer({
       setPosting(false)
       setContent('')
       setImageUrls([])
+      setExpanded(false)
       flashPosted()
       notifyPosted()
       return
@@ -115,125 +171,209 @@ export function PostComposer({
     }
     setContent('')
     setImageUrls([])
+    setExpanded(false)
     flashPosted()
     notifyPosted()
   }
 
-  const disabled = posting || uploading || (content.trim().length === 0 && imageUrls.length === 0)
-  const nearLimit = content.length >= MAX_LENGTH - 50
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault()
+      void submit()
+    }
+  }
 
-  return (
-    <Card
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    void submit()
+  }
+
+  const uploadLabel = (
+    <label
       className={cn(
-        'relative isolate overflow-hidden border-primary/25 bg-secondary transition-[border-color,box-shadow] duration-300 focus-within:border-primary/60',
-        justPosted && 'ring-2 ring-primary/50'
+        'inline-flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1 text-xs font-semibold transition-colors',
+        imageUrls.length >= MAX_IMAGES
+          ? 'cursor-not-allowed text-muted-foreground/50'
+          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
       )}
     >
-      <Guilloche className="text-primary" opacity={0.05} />
-      <WatermarkCoin className="-bottom-12 -right-4" size={160} opacity={0.06} />
-      <form onSubmit={handleSubmit} className="relative z-10">
-        <div className="flex gap-3 px-4 pt-4">
-          <Avatar src={avatarUrl} fallback={displayName} className="mt-1 ring-2 ring-card" />
-          <div className="min-w-0 flex-1">
-            <div className="rounded-lg border border-primary/15 bg-background/50 px-3 py-2 transition-colors focus-within:border-primary/45">
-              <Textarea
-                ref={textareaRef}
-                placeholder="Bạn đang nghĩ gì?"
-                aria-label="Nội dung bài viết"
-                maxLength={MAX_LENGTH}
-                rows={1}
-                value={content}
-                onChange={e => setContent(e.target.value)}
-                onKeyDown={e => {
-                  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                    e.preventDefault()
-                    e.currentTarget.form?.requestSubmit()
-                  }
-                }}
-                className="min-h-[40px] resize-none border-0 bg-transparent px-0 py-0 text-body leading-relaxed shadow-none placeholder:text-secondary-foreground/50 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-0"
-              />
-            </div>
-          </div>
-        </div>
+      <ImagePlus className={cn('h-4 w-4', uploading && 'animate-pulse')} />
+      {uploading ? 'Đang tải…' : `${imageUrls.length}/${MAX_IMAGES}`}
+      <input
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handleImageUpload}
+        disabled={imageUrls.length >= MAX_IMAGES || uploading}
+      />
+    </label>
+  )
 
-        {imageUrls.length > 0 && (
-          <div className="flex flex-wrap gap-2 px-4 pt-3">
-            {imageUrls.map(url => (
-              <div key={url} className="group relative">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={url}
-                  alt=""
-                  className="h-20 w-20 rounded-lg border border-primary/15 object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={() => setImageUrls(urls => urls.filter(item => item !== url))}
-                  aria-label="Xoá ảnh"
-                  className="absolute -right-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sheet transition-colors hover:text-destructive"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
+  return (
+    <>
+      <Card
+        className={cn(
+          'relative isolate overflow-hidden border-primary/25 bg-secondary transition-[border-color,box-shadow] duration-300 focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/20',
+          justPosted && 'ring-2 ring-primary/50'
+        )}
+      >
+        <Guilloche className="text-primary" opacity={0.05} />
+        <WatermarkCoin className="-bottom-12 -right-4" size={160} opacity={0.06} />
+        <form onSubmit={handleSubmit} className="relative z-10">
+          <div className="flex items-start justify-between gap-3 px-4 pt-4 sm:px-5">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <Avatar src={avatarUrl} fallback={displayName} className="ring-2 ring-card" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold">{displayName}</p>
+                <p className="text-[11px] text-secondary-foreground/60">
+                  Chia sẻ với cộng đồng
+                </p>
               </div>
-            ))}
-          </div>
-        )}
-
-        {error && (
-          <p
-            role="alert"
-            className="mx-4 mt-3 rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs font-medium text-destructive"
-          >
-            {error}
-          </p>
-        )}
-
-        <div className="mt-3 flex items-center justify-between gap-2 border-t border-primary/15 px-4 py-2.5">
-          <div className="flex items-center gap-3">
-            <label
-              className={cn(
-                'inline-flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1 text-xs font-semibold transition-colors',
-                imageUrls.length >= MAX_IMAGES
-                  ? 'cursor-not-allowed text-secondary-foreground/40'
-                  : 'text-secondary-foreground/70 hover:bg-primary/10 hover:text-primary'
-              )}
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setExpanded(true)}
+              aria-label="Mở rộng trình soạn thảo"
+              className="shrink-0 gap-1.5 rounded-full px-2.5 text-[11px] font-semibold text-secondary-foreground/60 hover:bg-primary/10 hover:text-primary"
             >
-              <ImagePlus className={cn('h-4 w-4', uploading && 'animate-pulse')} />
-              {uploading ? 'Đang tải…' : `${imageUrls.length}/${MAX_IMAGES}`}
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleImageUpload}
-                disabled={imageUrls.length >= MAX_IMAGES || uploading}
-              />
-            </label>
-            <span
-              className={cn(
-                'text-[11px] font-semibold tabular',
-                nearLimit ? 'text-destructive' : 'text-secondary-foreground/50'
-              )}
-            >
-              {content.length}/{MAX_LENGTH}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            {justPosted ? (
-              <span className="animate-rise inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-1 text-[11px] font-bold text-primary">
-                <Check className="h-3.5 w-3.5" /> Đã đăng
-              </span>
-            ) : (
-              <span className="hidden text-[10px] font-semibold text-secondary-foreground/40 sm:block">
-                ⌘↵ để đăng
-              </span>
-            )}
-            <Button type="submit" size="sm" loading={posting} disabled={disabled}>
-              Đăng
+              <Maximize2 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Mở rộng</span>
             </Button>
           </div>
-        </div>
-      </form>
-    </Card>
+
+          <div className="px-4 pt-2 sm:px-5">
+            <Textarea
+              ref={inlineRef}
+              placeholder="Bạn đang nghĩ gì?"
+              aria-label="Nội dung bài viết"
+              maxLength={MAX_LENGTH}
+              rows={3}
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="min-h-[112px] resize-none border-0 bg-transparent p-0 text-body leading-relaxed shadow-none placeholder:text-secondary-foreground/65 focus-visible:outline-none focus-visible:ring-transparent focus-visible:ring-offset-0"
+            />
+          </div>
+
+          <ImagePreviews
+            urls={imageUrls}
+            onRemove={removeImage}
+            className="px-4 pt-3 sm:px-5"
+          />
+
+          {error && (
+            <p
+              role="alert"
+              className="mx-4 mt-3 rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs font-medium text-destructive sm:mx-5"
+            >
+              {error}
+            </p>
+          )}
+
+          <div className="mt-3 flex items-center justify-between gap-2 border-t border-primary/15 px-4 py-2.5 sm:px-5">
+            <div className="flex items-center gap-3">
+              {uploadLabel}
+              <span
+                className={cn(
+                  'text-[11px] font-semibold tabular',
+                  nearLimit ? 'text-destructive' : 'text-secondary-foreground/50'
+                )}
+              >
+                {content.length}/{MAX_LENGTH}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              {justPosted ? (
+                <span className="animate-rise inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-1 text-[11px] font-bold text-primary">
+                  <Check className="h-3.5 w-3.5" /> Đã đăng
+                </span>
+              ) : (
+                <span className="hidden text-[10px] font-semibold text-secondary-foreground/40 sm:block">
+                  ⌘↵ để đăng
+                </span>
+              )}
+              <Button type="submit" size="sm" loading={posting} disabled={disabled}>
+                Đăng
+              </Button>
+            </div>
+          </div>
+        </form>
+      </Card>
+
+      <Dialog open={expanded} onOpenChange={setExpanded}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <DialogTitle className="text-h2 font-extrabold tracking-tight">
+            Tạo bài viết
+          </DialogTitle>
+          <DialogDescription className="mt-1 text-sm text-muted-foreground">
+            Không gian rộng hơn cho bài viết dài. Nội dung và ảnh được giữ nguyên khi thu nhỏ.
+          </DialogDescription>
+
+          <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+            <div className="flex items-center gap-2.5">
+              <Avatar src={avatarUrl} fallback={displayName} size="sm" />
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{displayName}</p>
+                <p className="text-[11px] text-muted-foreground">Đăng lên bảng tin</p>
+              </div>
+            </div>
+
+            <Textarea
+              ref={dialogRef}
+              autoFocus
+              placeholder="Bạn đang nghĩ gì?"
+              aria-label="Nội dung bài viết"
+              maxLength={MAX_LENGTH}
+              rows={10}
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="min-h-[38vh] resize-none border-border bg-muted/30 p-4 text-body leading-relaxed focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:ring-offset-0"
+            />
+
+            <ImagePreviews urls={imageUrls} onRemove={removeImage} />
+
+            {error && (
+              <p
+                role="alert"
+                className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs font-medium text-destructive"
+              >
+                {error}
+              </p>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+              <div className="flex items-center gap-3">
+                {uploadLabel}
+                <span
+                  className={cn(
+                    'text-[11px] font-semibold tabular',
+                    nearLimit ? 'text-destructive' : 'text-muted-foreground'
+                  )}
+                >
+                  {content.length}/{MAX_LENGTH}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="hidden text-[10px] font-semibold text-muted-foreground sm:block">
+                  ⌘↵ để đăng
+                </span>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline" size="sm">
+                    Thu nhỏ
+                  </Button>
+                </DialogClose>
+                <Button type="submit" size="sm" loading={posting} disabled={disabled}>
+                  Đăng
+                </Button>
+              </div>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
