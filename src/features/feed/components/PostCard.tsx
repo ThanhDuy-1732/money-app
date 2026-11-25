@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/vi'
@@ -22,9 +23,18 @@ type Post = Database['public']['Tables']['posts']['Row'] & {
   user_liked?: boolean
 }
 
-export function PostCard({ post, currentUserId }: { post: Post; currentUserId?: string }) {
+export function PostCard({
+  post,
+  currentUserId,
+  demo = false,
+}: {
+  post: Post
+  currentUserId?: string
+  demo?: boolean
+}) {
   const images = (post.image_urls as unknown as string[]) ?? []
   const inputId = `comment-input-${post.id}`
+  const [commentPulse, setCommentPulse] = useState(0)
 
   return (
     <Card className="transition-colors hover:border-primary/25">
@@ -73,6 +83,7 @@ export function PostCard({ post, currentUserId }: { post: Post; currentUserId?: 
             postId={post.id}
             initialCount={post.like_count}
             initialLiked={post.user_liked ?? false}
+            demo={demo}
           />
           <Button
             variant="ghost"
@@ -88,8 +99,21 @@ export function PostCard({ post, currentUserId }: { post: Post; currentUserId?: 
           </Button>
         </div>
 
-        <CommentList comments={post.comments} />
-        {currentUserId && <CommentInput postId={post.id} inputId={inputId} />}
+        <div className="relative">
+          {commentPulse > 0 && (
+            <span key={commentPulse} aria-hidden className="comment-flash-overlay" />
+          )}
+          <CommentList comments={post.comments} />
+        </div>
+
+        {currentUserId && (
+          <CommentInput
+            postId={post.id}
+            inputId={inputId}
+            demo={demo}
+            onSubmitted={() => setCommentPulse(value => value + 1)}
+          />
+        )}
       </CardBody>
     </Card>
   )

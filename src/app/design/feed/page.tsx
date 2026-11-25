@@ -43,7 +43,7 @@ export default function FeedDesignPage() {
           </div>
           <div className="feed-rise space-y-4">
             {mockPosts.map(post => (
-              <PostCard key={post.id} post={post} currentUserId={mockUser.id} />
+              <PostCard key={post.id} post={post} currentUserId={mockUser.id} demo />
             ))}
           </div>
         </section>

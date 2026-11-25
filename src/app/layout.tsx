@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Be_Vietnam_Pro } from 'next/font/google'
 import './globals.css'
-import { ToastProvider } from '@/components/ui'
+import { Toaster, ToastProvider } from '@/components/ui'
 import { createClient } from '@/lib/supabase/server'
 import { AppNav } from '@/components/AppNav'
 import { signOut } from '@/features/auth/actions/auth.actions'
@@ -53,6 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             />
           )}
           <div className={user ? 'min-h-screen pb-20 pt-14 md:pb-0 md:pl-60 md:pt-0' : 'min-h-screen'}>{children}</div>
+          <Toaster />
         </ToastProvider>
       </body>
     </html>

@@ -239,6 +239,20 @@
   }
 }
 
+/* Phần tử trang trí chỉ hiện khi animation chạy (xem block dưới). */
+.heart-float {
+  opacity: 0;
+}
+
+.comment-flash-overlay {
+  position: absolute;
+  inset: -6px;
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0;
+  background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
+
 /* Motion: một nhịp vào trang cho danh sách, phần còn lại chỉ phản hồi thao tác.
    Mọi hiệu ứng tắt hoàn toàn khi người dùng chọn giảm chuyển động. */
 @media (prefers-reduced-motion: no-preference) {
@@ -311,6 +325,29 @@
     }
   }
 
+  @keyframes heart-float {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, 0) scale(0.5);
+    }
+    25% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(calc(-50% + var(--dx, 0px)), -32px) scale(1.15);
+    }
+  }
+
+  @keyframes comment-flash {
+    from {
+      opacity: 0.9;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
   /* Nhịp vào trang duy nhất: chỉ dùng cho danh sách bài viết. */
   .feed-rise > * {
     animation: rise 0.45s cubic-bezier(0.22, 0.72, 0.18, 1) both;
@@ -341,5 +378,11 @@
   }
   .toast-root[data-state='closed'] {
     animation: toast-out 0.18s ease-in forwards;
+  }
+  .heart-float {
+    animation: heart-float 0.9s ease-out forwards;
+  }
+  .comment-flash-overlay {
+    animation: comment-flash 1s ease-out forwards;
   }
 }

@@ -12,6 +12,7 @@ type FeedPost = Database['public']['Tables']['posts']['Row'] & {
       profiles: { display_name: string; avatar_url: string | null }
     }
   >
+  user_liked?: boolean
 }
 
 export async function FeedList({

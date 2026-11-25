@@ -90,7 +90,24 @@ export async function fetchFeedPage(
   const posts = (rawPosts ?? []) as Array<Record<string, unknown> & { created_at: string }>
   const nextCursor = posts.length === FEED_PAGE_SIZE ? posts[posts.length - 1].created_at : null
 
-  return { posts, nextCursor }
+  // Gắn trạng thái đã thích của người xem để nút tim khởi tạo đúng.
+  let likedIds = new Set<string>()
+  if (userId && posts.length > 0) {
+    const { data: likes } = await supabase
+      .from('likes')
+      .select('post_id')
+      .eq('user_id', userId)
+      .in(
+        'post_id',
+        posts.map(post => post.id as string)
+      )
+    likedIds = new Set((likes ?? []).map(like => like.post_id))
+  }
+
+  return {
+    posts: posts.map(post => ({ ...post, user_liked: likedIds.has(post.id as string) })),
+    nextCursor,
+  }
 }
 
 export async function createComment(postId: string, content: string) {
