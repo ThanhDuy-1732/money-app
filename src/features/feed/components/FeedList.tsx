@@ -1,7 +1,8 @@
+import Link from 'next/link'
 import { fetchFeedPage } from '../actions/feed.actions'
 import { PostCard } from './PostCard'
 import { LoadMoreFeed } from './LoadMoreFeed'
-import { EmptyState } from '@/components/ui'
+import { Button, EmptyState } from '@/components/ui'
 import type { Database } from '@/lib/types/database'
 
 type FeedPost = Database['public']['Tables']['posts']['Row'] & {
@@ -29,12 +30,17 @@ export async function FeedList({
       <EmptyState
         title="Chưa có bài đăng"
         description="Theo dõi vài người hoặc đăng bài đầu tiên để bắt đầu."
+        action={
+          <Button asChild variant="outline" size="sm">
+            <Link href="/explore">Tìm người để theo dõi</Link>
+          </Button>
+        }
       />
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="feed-rise space-y-4">
       {(posts as FeedPost[]).map(post => (
         <PostCard key={post.id} post={post} currentUserId={userId} />
       ))}

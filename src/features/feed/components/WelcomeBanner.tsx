@@ -16,7 +16,7 @@ export function WelcomeBanner() {
   if (!visible) return null
 
   return (
-    <Card tone="coin">
+    <Card tone="coin" className="animate-rise">
       <CardBody className="flex items-start gap-3 pt-4">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-coin/20 text-coin-deep">
           <Sparkles className="h-4 w-4" />

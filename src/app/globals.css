@@ -238,3 +238,108 @@
     animation: none;
   }
 }
+
+/* Motion: một nhịp vào trang cho danh sách, phần còn lại chỉ phản hồi thao tác.
+   Mọi hiệu ứng tắt hoàn toàn khi người dùng chọn giảm chuyển động. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes like-pop {
+    0% {
+      transform: scale(1);
+    }
+    35% {
+      transform: scale(1.45) rotate(-8deg);
+    }
+    70% {
+      transform: scale(0.92);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes like-burst {
+    0% {
+      opacity: 0.9;
+      transform: scale(0.35);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(2.1);
+    }
+  }
+
+  @keyframes count-pop {
+    from {
+      opacity: 0.3;
+      transform: translateY(3px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes toast-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+
+  /* Nhịp vào trang duy nhất: chỉ dùng cho danh sách bài viết. */
+  .feed-rise > * {
+    animation: rise 0.45s cubic-bezier(0.22, 0.72, 0.18, 1) both;
+  }
+  .feed-rise > *:nth-child(1) { animation-delay: 0ms; }
+  .feed-rise > *:nth-child(2) { animation-delay: 45ms; }
+  .feed-rise > *:nth-child(3) { animation-delay: 90ms; }
+  .feed-rise > *:nth-child(4) { animation-delay: 135ms; }
+  .feed-rise > *:nth-child(5) { animation-delay: 180ms; }
+  .feed-rise > *:nth-child(6) { animation-delay: 225ms; }
+  .feed-rise > *:nth-child(7) { animation-delay: 270ms; }
+  .feed-rise > *:nth-child(n + 8) { animation-delay: 315ms; }
+
+  .animate-rise {
+    animation: rise 0.4s cubic-bezier(0.22, 0.72, 0.18, 1) both;
+  }
+  .like-pop {
+    animation: like-pop 0.42s cubic-bezier(0.22, 0.72, 0.18, 1);
+  }
+  .like-burst {
+    animation: like-burst 0.55s ease-out forwards;
+  }
+  .count-pop {
+    animation: count-pop 0.24s ease-out;
+  }
+  .toast-root[data-state='open'] {
+    animation: toast-in 0.28s cubic-bezier(0.22, 0.72, 0.18, 1);
+  }
+  .toast-root[data-state='closed'] {
+    animation: toast-out 0.18s ease-in forwards;
+  }
+}

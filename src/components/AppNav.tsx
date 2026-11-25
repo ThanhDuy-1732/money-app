@@ -73,7 +73,7 @@ export function AppNav({
         onClick={onClick}
         aria-current={active(item.href) ? 'page' : undefined}
         className={cn(
-          'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold transition-colors',
+          'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold transition-colors motion-safe:active:scale-[0.98]',
           active(item.href)
             ? 'bg-primary text-primary-foreground'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -184,7 +184,7 @@ export function AppNav({
               href={item.href}
               aria-current={active(item.href) ? 'page' : undefined}
               className={cn(
-                'flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold',
+                'flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-transform motion-safe:active:scale-95',
                 active(item.href) ? 'text-primary' : 'text-muted-foreground'
               )}
             >
@@ -198,7 +198,7 @@ export function AppNav({
           onClick={() => setMoreOpen(true)}
           aria-expanded={moreOpen}
           className={cn(
-            'flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold',
+            'flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-transform motion-safe:active:scale-95',
             moreOpen ? 'text-primary' : 'text-muted-foreground'
           )}
         >

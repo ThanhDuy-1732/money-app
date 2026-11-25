@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchFeedPage } from '../actions/feed.actions'
 import { PostCard } from './PostCard'
+import { Skeleton } from '@/components/ui'
 import type { Database } from '@/lib/types/database'
 
 type FeedPost = Database['public']['Tables']['posts']['Row'] & {
@@ -63,8 +64,21 @@ export function LoadMoreFeed({
         <PostCard key={post.id} post={post} currentUserId={userId} />
       ))}
       {!done && (
-        <div ref={sentinelRef} className="py-4 text-center text-sm text-muted-foreground">
-          {loading ? 'Đang tải thêm...' : ''}
+        <div ref={sentinelRef} className="py-2" aria-busy={loading}>
+          {loading && (
+            <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="space-y-1.5">
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-2.5 w-16" />
+                </div>
+              </div>
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-4/5" />
+              <span className="sr-only">Đang tải thêm bài viết</span>
+            </div>
+          )}
         </div>
       )}
     </>

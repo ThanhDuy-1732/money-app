@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Heart } from 'lucide-react'
 import { likePost, unlikePost } from '../actions/feed.actions'
 import { Button } from '@/components/ui'
+import { cn } from '@/lib/cn'
 
 export function LikeButton({
   postId,
@@ -15,12 +16,14 @@ export function LikeButton({
 }) {
   const [liked, setLiked] = useState(initialLiked)
   const [count, setCount] = useState(initialCount)
+  const [pulse, setPulse] = useState(0)
 
   async function toggle() {
     const prev = { liked, count }
     const next = !liked
     setLiked(next)
     setCount(c => c + (next ? 1 : -1))
+    if (next) setPulse(p => p + 1)
     const result = next ? await likePost(postId) : await unlikePost(postId)
     if (result?.error) {
       setLiked(prev.liked)
@@ -34,12 +37,31 @@ export function LikeButton({
       size="sm"
       onClick={toggle}
       aria-pressed={liked}
-      className="gap-1 text-muted-foreground"
+      aria-label={liked ? 'Bỏ thích bài viết' : 'Thích bài viết'}
+      className={cn(
+        'group relative gap-1.5 rounded-full px-2.5 text-muted-foreground',
+        liked && 'text-lotus hover:text-lotus'
+      )}
     >
-      <span data-icon="heart" className="inline-flex">
-        <Heart className={liked ? 'h-4 w-4 fill-current text-lotus' : 'h-4 w-4'} />
+      <span data-icon="heart" className="relative inline-flex">
+        <Heart
+          key={`heart-${pulse}`}
+          className={cn(
+            'h-4 w-4 transition-transform',
+            liked ? 'fill-current text-lotus like-pop' : 'group-hover:scale-110'
+          )}
+        />
+        {liked && pulse > 0 && (
+          <span
+            key={`burst-${pulse}`}
+            aria-hidden
+            className="like-burst pointer-events-none absolute inset-0 rounded-full border-2 border-lotus/60"
+          />
+        )}
       </span>
-      {count}
+      <span key={`count-${count}`} className="count-pop text-xs font-semibold tabular">
+        {count}
+      </span>
     </Button>
   )
 }

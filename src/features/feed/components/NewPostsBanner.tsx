@@ -41,9 +41,9 @@ export function NewPostsBanner({ followingIds }: { followingIds: string[] }) {
         router.refresh()
         setNewCount(0)
       }}
-      className="justify-center"
+      className="animate-rise group justify-center border border-primary/25"
     >
-      <RefreshCw className="h-4 w-4" />
+      <RefreshCw className="h-4 w-4 transition-transform duration-500 group-hover:rotate-180" />
       {newCount} bài viết mới — Nhấn để tải
     </Button>
   )
