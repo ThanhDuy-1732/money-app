@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, ImagePlus, Maximize2, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { createPost } from '../actions/feed.actions'
+import { EmojiTray, EmojiTrigger } from './EmojiTray'
 import {
   Avatar,
   Button,
@@ -73,9 +74,12 @@ export function PostComposer({
   const [posting, setPosting] = useState(false)
   const [justPosted, setJustPosted] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [emojiOpen, setEmojiOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const inlineRef = useRef<HTMLTextAreaElement>(null)
   const dialogRef = useRef<HTMLTextAreaElement>(null)
+  const inlineTouched = useRef(false)
+  const dialogTouched = useRef(false)
 
   const disabled = posting || uploading || (content.trim().length === 0 && imageUrls.length === 0)
   const nearLimit = content.length >= MAX_LENGTH - 50
@@ -110,6 +114,34 @@ export function PostComposer({
 
   function removeImage(url: string) {
     setImageUrls(urls => urls.filter(item => item !== url))
+  }
+
+  function markTouched(e: React.FocusEvent<HTMLTextAreaElement>) {
+    if (e.currentTarget === dialogRef.current) dialogTouched.current = true
+    else inlineTouched.current = true
+  }
+
+  function insertEmoji(emoji: string) {
+    const inDialog = expanded && Boolean(dialogRef.current)
+    const el = inDialog ? dialogRef.current : inlineRef.current
+    if (!el) return
+
+    // Chỉ dùng caret thật khi người dùng đã từng đặt con trỏ vào ô viết.
+    const touched = inDialog ? dialogTouched.current : inlineTouched.current
+    const start = Math.min(touched ? el.selectionStart : content.length, content.length)
+    const end = Math.min(
+      touched ? Math.max(el.selectionEnd, start) : content.length,
+      content.length
+    )
+
+    const next = (content.slice(0, start) + emoji + content.slice(end)).slice(0, MAX_LENGTH)
+    setContent(next)
+
+    const caret = Math.min(start + emoji.length, next.length)
+    requestAnimationFrame(() => {
+      el.focus()
+      el.setSelectionRange(caret, caret)
+    })
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -158,6 +190,7 @@ export function PostComposer({
       setContent('')
       setImageUrls([])
       setExpanded(false)
+      setEmojiOpen(false)
       flashPosted()
       notifyPosted()
       return
@@ -172,6 +205,7 @@ export function PostComposer({
     setContent('')
     setImageUrls([])
     setExpanded(false)
+    setEmojiOpen(false)
     flashPosted()
     notifyPosted()
   }
@@ -235,7 +269,10 @@ export function PostComposer({
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setExpanded(true)}
+              onClick={() => {
+                setEmojiOpen(false)
+                setExpanded(true)
+              }}
               aria-label="Mở rộng trình soạn thảo"
               className="shrink-0 gap-1.5 rounded-full px-2.5 text-[11px] font-semibold text-secondary-foreground/60 hover:bg-primary/10 hover:text-primary"
             >
@@ -253,6 +290,7 @@ export function PostComposer({
               rows={3}
               value={content}
               onChange={e => setContent(e.target.value)}
+              onFocus={markTouched}
               onKeyDown={handleKeyDown}
               className="min-h-[112px] resize-none border-0 bg-transparent p-0 text-body leading-relaxed shadow-none placeholder:text-secondary-foreground/65 focus-visible:outline-none focus-visible:ring-transparent focus-visible:ring-offset-0"
             />
@@ -273,9 +311,19 @@ export function PostComposer({
             </p>
           )}
 
+          {emojiOpen && !expanded && (
+            <div className="px-4 pt-3 sm:px-5">
+              <EmojiTray onPick={insertEmoji} onClose={() => setEmojiOpen(false)} />
+            </div>
+          )}
+
           <div className="mt-3 flex items-center justify-between gap-2 border-t border-primary/15 px-4 py-2.5 sm:px-5">
             <div className="flex items-center gap-3">
               {uploadLabel}
+              <EmojiTrigger
+                active={emojiOpen}
+                onClick={() => setEmojiOpen(value => !value)}
+              />
               <span
                 className={cn(
                   'text-[11px] font-semibold tabular',
@@ -303,7 +351,13 @@ export function PostComposer({
         </form>
       </Card>
 
-      <Dialog open={expanded} onOpenChange={setExpanded}>
+      <Dialog
+        open={expanded}
+        onOpenChange={open => {
+          setExpanded(open)
+          if (!open) setEmojiOpen(false)
+        }}
+      >
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogTitle className="text-h2 font-extrabold tracking-tight">
             Tạo bài viết
@@ -330,6 +384,7 @@ export function PostComposer({
               rows={10}
               value={content}
               onChange={e => setContent(e.target.value)}
+              onFocus={markTouched}
               onKeyDown={handleKeyDown}
               className="min-h-[38vh] resize-none border-border bg-muted/30 p-4 text-body leading-relaxed focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:ring-offset-0"
             />
@@ -345,9 +400,17 @@ export function PostComposer({
               </p>
             )}
 
+            {emojiOpen && expanded && (
+              <EmojiTray onPick={insertEmoji} onClose={() => setEmojiOpen(false)} />
+            )}
+
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
               <div className="flex items-center gap-3">
                 {uploadLabel}
+                <EmojiTrigger
+                  active={emojiOpen}
+                  onClick={() => setEmojiOpen(value => !value)}
+                />
                 <span
                   className={cn(
                     'text-[11px] font-semibold tabular',
